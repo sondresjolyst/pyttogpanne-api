@@ -1,10 +1,37 @@
 # pyttogpanne-api
 
-Backend for Pyttogpanne — a Norwegian cookbook of one-pan trail meals. Serves the mobile app
-(`pyttogpanne-mobile`) and the admin site (`pyttogpanne-app`).
+Serves recipes, categories and gear tips to the Pyttogpanne app.
 
-Vertical slice architecture: minimal API endpoints, static handlers, FluentValidation,
-ProblemDetails errors. Each slice registers itself through `IEndpoint`.
+## Architecture
+
+Vertical slice: each feature under `Features/` owns its endpoints, contracts and validators, and
+registers its own routes through `IEndpoint`. No controllers, no MediatR. Validation is
+FluentValidation via `WithValidation<T>()`; errors come back as ProblemDetails.
+
+```
+Features/        one folder per slice
+Models/          EF entities and the DbContext
+Services/        image storage, email, background jobs
+Infrastructure/  endpoint registration, validation filter, seeding
+```
+
+Recipes are the core entity: ingredients and steps are ordered child rows, categories a link
+table, images a reference to `ContentImages`. Recipes are drafts until published.
+
+## Endpoints
+
+| Route | Access |
+| --- | --- |
+| `GET /api/recipes` | anonymous; `category` and `search` filters, `all=true` adds drafts for an admin |
+| `GET /api/recipes/sync` | anonymous; every published recipe in full, `since` returns only changes |
+| `GET /api/recipes/{slug}` | anonymous; drafts admin-only |
+| `POST/PUT/DELETE /api/recipes` | admin |
+| `/api/recipe-categories` | read anonymous, write admin |
+| `/api/gear` | read anonymous, write admin |
+| `/api/content-images` | upload admin, read anonymous |
+
+`sync` also returns `deletedSlugs`. Deleting, unpublishing or renaming a recipe writes a
+tombstone row, so a client that cached it knows to drop it; re-publishing clears the tombstone.
 
 ## Running
 
@@ -12,26 +39,14 @@ ProblemDetails errors. Each slice registers itself through `IEndpoint`.
 dotnet run
 ```
 
-Swagger is at `/swagger`. Configure the connection string, JWT key and CORS origins through
-`appsettings.Development.json` or user secrets.
+Swagger at `/swagger`. Connection string, `Jwt:Key`, `Cors:AllowedOrigins` and `TrustedProxies`
+come from configuration — user secrets locally, environment variables in the cluster. Pending
+migrations are applied at startup.
 
-The database must be created with `ENCODING UTF8` — recipe text is full of æ, ø and å.
+`TrustedProxies` lists the CIDRs allowed to set `X-Forwarded-For`. Leave it empty when the API is
+not behind a proxy; a wildcard would let any caller forge the client IP the rate limiter reads.
 
-## Endpoints
-
-| Route | Access | What |
-| --- | --- | --- |
-| `GET /api/recipes` | anonymous | Published recipes; `category`, `search` filters. `all=true` adds drafts for an admin. |
-| `GET /api/recipes/sync` | anonymous | Every published recipe in full, plus slugs to drop. `since` returns only what changed. |
-| `GET /api/recipes/{slug}` | anonymous | One recipe, drafts admin-only. |
-| `POST/PUT/DELETE /api/recipes` | admin | Editor writes. |
-| `GET /api/recipe-categories` | anonymous | Categories, admin writes on the same route. |
-| `GET /api/gear` | anonymous | Gear and trail tips, admin writes on the same route. |
-| `POST /api/content-images` | admin | Image upload; recipes reference images by id. |
-
-The app syncs with `/api/recipes/sync`, stores the response, and passes the previous `serverTime`
-back as `since` next time. Unpublishing or deleting a recipe, and renaming one, all land in
-`deletedSlugs` so a cached copy is dropped.
+Create the database with `ENCODING UTF8`.
 
 ## Tests
 
@@ -40,13 +55,12 @@ dotnet build pyttogpanne-api.Tests/pyttogpanne-api.Tests.csproj
 ./pyttogpanne-api.Tests/bin/Debug/net10.0/pyttogpanne-api.Tests.exe
 ```
 
-xUnit v3 builds the test project as an executable. `dotnet test` discovers zero tests on some
-local setups; CI runs `dotnet test --no-build`.
+xUnit v3 builds the test project as an executable and is invoked directly; `dotnet test`
+discovers nothing on some local setups. Handlers are called as plain static methods against an
+in-memory context, so there is no test host to configure.
 
 ## Migrations
 
 ```sh
 dotnet ef migrations add <Name> --project pyttogpanne-api.csproj
 ```
-
-Pending migrations are applied at startup.
