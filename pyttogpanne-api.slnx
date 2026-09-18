@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="pyttogpanne-api.csproj" />
+  <Project Path="pyttogpanne-api.Tests/pyttogpanne-api.Tests.csproj" />
+</Solution>
