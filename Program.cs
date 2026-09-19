@@ -183,6 +183,9 @@ namespace pyttogpanne_api
                 await SeedData.EnsureRecipeCategoriesAsync(context);
                 await SeedData.EnsureLegalPagesAsync(context);
                 await AdminSeeder.EnsureFirstAdminAsync(scope.ServiceProvider, app.Configuration, logger);
+
+                if (app.Environment.IsDevelopment())
+                    await SampleRecipes.EnsureAsync(context);
             }
 
             var fwd = new ForwardedHeadersOptions
