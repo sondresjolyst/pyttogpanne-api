@@ -18,11 +18,13 @@ namespace pyttogpanne_api.Models
         public DbSet<ContentImageVariant> ContentImageVariants { get; set; }
         public DbSet<DailyStatSnapshot> DailyStatSnapshots { get; set; }
         public DbSet<Recipe> Recipes { get; set; }
+        public DbSet<RecipeImage> RecipeImages { get; set; }
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
         public DbSet<RecipeStep> RecipeSteps { get; set; }
         public DbSet<RecipeCategory> RecipeCategories { get; set; }
         public DbSet<RecipeCategoryLink> RecipeCategoryLinks { get; set; }
         public DbSet<GearItem> GearItems { get; set; }
+        public DbSet<GearImage> GearImages { get; set; }
         public DbSet<DeletedRecipe> DeletedRecipes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,11 +54,21 @@ namespace pyttogpanne_api.Models
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
-            modelBuilder.Entity<Recipe>()
-                .HasOne(r => r.CoverImage)
+            modelBuilder.Entity<RecipeImage>()
+                .HasIndex(i => new { i.RecipeId, i.ContentImageId })
+                .IsUnique();
+
+            modelBuilder.Entity<RecipeImage>()
+                .HasOne(i => i.Recipe)
+                .WithMany(r => r.Images)
+                .HasForeignKey(i => i.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RecipeImage>()
+                .HasOne(i => i.ContentImage)
                 .WithMany()
-                .HasForeignKey(r => r.CoverImageId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasForeignKey(i => i.ContentImageId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<RecipeIngredient>()
                 .HasOne(i => i.Recipe)
@@ -108,11 +120,21 @@ namespace pyttogpanne_api.Models
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
-            modelBuilder.Entity<GearItem>()
-                .HasOne(g => g.ContentImage)
+            modelBuilder.Entity<GearImage>()
+                .HasIndex(i => new { i.GearItemId, i.ContentImageId })
+                .IsUnique();
+
+            modelBuilder.Entity<GearImage>()
+                .HasOne(i => i.GearItem)
+                .WithMany(g => g.Images)
+                .HasForeignKey(i => i.GearItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GearImage>()
+                .HasOne(i => i.ContentImage)
                 .WithMany()
-                .HasForeignKey(g => g.ContentImageId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasForeignKey(i => i.ContentImageId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

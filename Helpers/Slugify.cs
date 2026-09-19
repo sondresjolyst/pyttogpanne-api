@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,6 +28,29 @@ namespace pyttogpanne_api.Helpers
             var slug = sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
             slug = NonSlugChars().Replace(slug, "-");
             slug = MultiDash().Replace(slug, "-").Trim('-');
+            return slug;
+        }
+
+
+        /// <summary>
+        /// A slug for <paramref name="title"/> that none of <paramref name="taken"/> already holds,
+        /// adding -2, -3 and so on until it is free. Callers pass the slugs of every other row,
+        /// leaving out the row being edited so it does not collide with itself.
+        /// </summary>
+        public static async Task<string> UniqueAsync(IQueryable<string> taken, string title, string fallback, CancellationToken ct = default)
+        {
+            var baseSlug = Create(title);
+            if (string.IsNullOrEmpty(baseSlug)) baseSlug = fallback;
+
+            var used = await taken.ToListAsync(ct);
+
+            var slug = baseSlug;
+            var suffix = 2;
+            while (used.Contains(slug))
+            {
+                slug = $"{baseSlug}-{suffix}";
+                suffix++;
+            }
             return slug;
         }
 

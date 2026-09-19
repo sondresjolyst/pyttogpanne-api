@@ -5,6 +5,7 @@ using pyttogpanne_api.Helpers;
 using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models;
 using pyttogpanne_api.Models.Recipes;
+using pyttogpanne_api.Services;
 
 namespace pyttogpanne_api.Features.Gear
 {
@@ -29,6 +30,7 @@ namespace pyttogpanne_api.Features.Gear
             }
 
             var items = await query
+                .Include(g => g.Images)
                 .OrderBy(g => g.SortOrder)
                 .ThenBy(g => g.Title)
                 .ToListAsync(ct);
@@ -38,7 +40,7 @@ namespace pyttogpanne_api.Features.Gear
 
         public static async Task<IResult> GetBySlug(string slug, HttpContext http, ApplicationDbContext db, CancellationToken ct)
         {
-            var item = await db.GearItems.AsNoTracking().FirstOrDefaultAsync(g => g.Slug == slug, ct);
+            var item = await db.GearItems.AsNoTracking().Include(g => g.Images).FirstOrDefaultAsync(g => g.Slug == slug, ct);
             if (item == null || (!item.IsPublished && !IsAdmin(http)))
                 return TypedResults.NotFound();
 
@@ -49,39 +51,49 @@ namespace pyttogpanne_api.Features.Gear
         {
             var item = new GearItem
             {
-                Slug = await UniqueSlugAsync(body.Title, null, db, ct),
+                Slug = await Slugify.UniqueAsync(db.GearItems.Select(g => g.Slug), body.Title, "utstyr", ct),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
             Apply(item, body);
+            GalleryImages.Replace(item.Images, body.Images);
 
             db.GearItems.Add(item);
             await db.SaveChangesAsync(ct);
             return TypedResults.Created($"/api/gear/{item.Slug}", ToDto(item));
         }
 
-        public static async Task<IResult> Update(int id, GearItemInput body, ApplicationDbContext db, CancellationToken ct)
+        public static async Task<IResult> Update(int id, GearItemInput body, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
         {
-            var item = await db.GearItems.FirstOrDefaultAsync(g => g.Id == id, ct);
+            var item = await db.GearItems.Include(g => g.Images).FirstOrDefaultAsync(g => g.Id == id, ct);
             if (item == null) return TypedResults.NotFound();
 
             if (!string.Equals(item.Title, body.Title.Trim(), StringComparison.Ordinal))
-                item.Slug = await UniqueSlugAsync(body.Title, item.Id, db, ct);
+                item.Slug = await Slugify.UniqueAsync(db.GearItems.Where(g => g.Id != item.Id).Select(g => g.Slug), body.Title, "utstyr", ct);
 
             Apply(item, body);
             item.UpdatedAt = DateTime.UtcNow;
 
+            var dropped = item.Images.Select(i => i.ContentImageId).ToList();
+            db.GearImages.RemoveRange(item.Images);
+            GalleryImages.Replace(item.Images, body.Images);
+
             await db.SaveChangesAsync(ct);
+            await ImageCleanup.DeleteOrphansAsync(dropped, db, images, ct);
+
             return TypedResults.Ok(ToDto(item));
         }
 
-        public static async Task<IResult> Delete(int id, ApplicationDbContext db, CancellationToken ct)
+        public static async Task<IResult> Delete(int id, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
         {
-            var item = await db.GearItems.FirstOrDefaultAsync(g => g.Id == id, ct);
+            var item = await db.GearItems.Include(g => g.Images).FirstOrDefaultAsync(g => g.Id == id, ct);
             if (item == null) return TypedResults.NotFound();
 
+            var dropped = item.Images.Select(i => i.ContentImageId).ToList();
             db.GearItems.Remove(item);
             await db.SaveChangesAsync(ct);
+            await ImageCleanup.DeleteOrphansAsync(dropped, db, images, ct);
+
             return TypedResults.NoContent();
         }
 
@@ -89,11 +101,12 @@ namespace pyttogpanne_api.Features.Gear
         {
             item.Title = body.Title.Trim();
             item.Kind = Enum.Parse<GearItemKind>(body.Kind, ignoreCase: true);
-            item.Summary = string.IsNullOrWhiteSpace(body.Summary) ? null : body.Summary.Trim();
+            item.Summary = Text.Trimmed(body.Summary);
             item.Body = body.Body.Trim();
-            item.ContentImageId = string.IsNullOrWhiteSpace(body.ContentImageId) ? null : body.ContentImageId.Trim();
             item.SortOrder = body.SortOrder;
             item.IsPublished = body.IsPublished;
+            item.IsAdvertising = body.IsAdvertising;
+            item.Advertiser = Text.Trimmed(body.Advertiser);
         }
 
         private static GearItemDto ToDto(GearItem g) => new()
@@ -104,26 +117,14 @@ namespace pyttogpanne_api.Features.Gear
             Kind = g.Kind.ToString(),
             Summary = g.Summary,
             Body = g.Body,
-            ContentImageId = g.ContentImageId,
+            CoverImageId = GalleryImages.Cover(g.Images),
+            Images = GalleryImages.ToDtos(g.Images),
             SortOrder = g.SortOrder,
             IsPublished = g.IsPublished,
+            IsAdvertising = g.IsAdvertising,
+            Advertiser = g.Advertiser,
             UpdatedAt = g.UpdatedAt
         };
-
-        private static async Task<string> UniqueSlugAsync(string title, int? excludeId, ApplicationDbContext db, CancellationToken ct)
-        {
-            var baseSlug = Slugify.Create(title);
-            if (string.IsNullOrEmpty(baseSlug)) baseSlug = "utstyr";
-
-            var slug = baseSlug;
-            var suffix = 2;
-            while (await db.GearItems.AnyAsync(g => g.Slug == slug && g.Id != excludeId, ct))
-            {
-                slug = $"{baseSlug}-{suffix}";
-                suffix++;
-            }
-            return slug;
-        }
 
         public class Endpoints : IEndpoint
         {
@@ -145,9 +146,11 @@ namespace pyttogpanne_api.Features.Gear
         public string Kind { get; set; } = "Utstyr";
         public string? Summary { get; set; }
         public string Body { get; set; } = string.Empty;
-        public string? ContentImageId { get; set; }
         public int SortOrder { get; set; }
         public bool IsPublished { get; set; }
+        public bool IsAdvertising { get; set; }
+        public string? Advertiser { get; set; }
+        public List<GalleryImageInput> Images { get; set; } = [];
     }
 
     public class GearItemValidator : AbstractValidator<GearItemInput>
@@ -160,7 +163,8 @@ namespace pyttogpanne_api.Features.Gear
                 .WithMessage("Unknown kind.");
             RuleFor(x => x.Summary).MaximumLength(500);
             RuleFor(x => x.Body).NotEmpty();
-            RuleFor(x => x.ContentImageId).MaximumLength(32);
+            RuleFor(x => x.Advertiser).MaximumLength(120);
+            RuleForEach(x => x.Images).SetValidator(new GalleryImageValidator());
         }
     }
 
@@ -172,9 +176,16 @@ namespace pyttogpanne_api.Features.Gear
         public string Kind { get; set; } = string.Empty;
         public string? Summary { get; set; }
         public string Body { get; set; } = string.Empty;
-        public string? ContentImageId { get; set; }
+        /// <summary>The first photo, so a list can show an item without carrying the rest.</summary>
+        public string? CoverImageId { get; set; }
+        public List<GalleryImageDto> Images { get; set; } = [];
         public int SortOrder { get; set; }
         public bool IsPublished { get; set; }
+
+        /// <summary>The app must label this as advertising, prominently and without scrolling.</summary>
+        public bool IsAdvertising { get; set; }
+        public string? Advertiser { get; set; }
+
         public DateTime UpdatedAt { get; set; }
     }
 }

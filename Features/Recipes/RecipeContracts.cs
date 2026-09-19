@@ -1,4 +1,5 @@
 using FluentValidation;
+using pyttogpanne_api.Infrastructure;
 
 namespace pyttogpanne_api.Features.Recipes
 {
@@ -26,11 +27,13 @@ namespace pyttogpanne_api.Features.Recipes
         public int? CookMinutes { get; set; }
         public string Difficulty { get; set; } = "Enkel";
         public string? Tips { get; set; }
-        public string? CoverImageId { get; set; }
         public bool IsPublished { get; set; }
+        public bool IsAdvertising { get; set; }
+        public string? Advertiser { get; set; }
         public List<int> CategoryIds { get; set; } = [];
         public List<RecipeIngredientInput> Ingredients { get; set; } = [];
         public List<RecipeStepInput> Steps { get; set; } = [];
+        public List<GalleryImageInput> Images { get; set; } = [];
     }
 
     public class RecipeValidator : AbstractValidator<RecipeInput>
@@ -54,6 +57,8 @@ namespace pyttogpanne_api.Features.Recipes
                 i.RuleFor(x => x.Unit).MaximumLength(40);
                 i.RuleFor(x => x.Note).MaximumLength(200);
             });
+            RuleFor(x => x.Advertiser).MaximumLength(120);
+            RuleForEach(x => x.Images).SetValidator(new GalleryImageValidator());
             RuleFor(x => x.Steps).NotEmpty().WithMessage("A recipe needs at least one step.");
             RuleForEach(x => x.Steps).ChildRules(s =>
             {
@@ -99,8 +104,16 @@ namespace pyttogpanne_api.Features.Recipes
         public int Servings { get; set; }
         public int? TotalMinutes { get; set; }
         public string Difficulty { get; set; } = string.Empty;
+
+        /// <summary>The first photo, so a list can show a recipe without carrying the rest.</summary>
         public string? CoverImageId { get; set; }
+
         public bool IsPublished { get; set; }
+
+        /// <summary>The app must label this as advertising, prominently and without scrolling.</summary>
+        public bool IsAdvertising { get; set; }
+        public string? Advertiser { get; set; }
+
         public DateTime UpdatedAt { get; set; }
         public List<RecipeCategoryDto> Categories { get; set; } = [];
     }
@@ -113,5 +126,6 @@ namespace pyttogpanne_api.Features.Recipes
         public DateTime? PublishedAt { get; set; }
         public List<RecipeIngredientDto> Ingredients { get; set; } = [];
         public List<RecipeStepDto> Steps { get; set; } = [];
+        public List<GalleryImageDto> Images { get; set; } = [];
     }
 }

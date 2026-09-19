@@ -26,11 +26,21 @@ namespace pyttogpanne_api.Models.Recipes
         /// <summary>Markdown.</summary>
         public string Body { get; set; } = string.Empty;
 
-        [MaxLength(32)]
-        public string? ContentImageId { get; set; }
-        public ContentImage? ContentImage { get; set; }
-
         public int SortOrder { get; set; }
+
+        public List<GearImage> Images { get; set; } = [];
+
+
+        /// <summary>
+        /// Set when the item is advertising: free products, a discount or a paid partnership.
+        /// Forbrukertilsynet treats free products with an underlying expectation of exposure as
+        /// advertising even without an agreement, so this is the author's call to make per item.
+        /// </summary>
+        public bool IsAdvertising { get; set; }
+
+        /// <summary>Who the advertiser is, shown next to the label when it is filled in.</summary>
+        [MaxLength(120)]
+        public string? Advertiser { get; set; }
 
         public bool IsPublished { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

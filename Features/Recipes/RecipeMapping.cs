@@ -1,3 +1,4 @@
+using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models.Recipes;
 
 namespace pyttogpanne_api.Features.Recipes
@@ -23,6 +24,7 @@ namespace pyttogpanne_api.Features.Recipes
                 Name = i.Name,
                 Note = i.Note
             })];
+            dto.Images = GalleryImages.ToDtos(r.Images);
             dto.Steps = [.. r.Steps.OrderBy(s => s.SortOrder).Select(s => new RecipeStepDto
             {
                 Id = s.Id,
@@ -52,8 +54,10 @@ namespace pyttogpanne_api.Features.Recipes
                 ? (r.PrepMinutes ?? 0) + (r.CookMinutes ?? 0)
                 : null;
             dto.Difficulty = r.Difficulty.ToString();
-            dto.CoverImageId = r.CoverImageId;
+            dto.CoverImageId = GalleryImages.Cover(r.Images);
             dto.IsPublished = r.IsPublished;
+            dto.IsAdvertising = r.IsAdvertising;
+            dto.Advertiser = r.Advertiser;
             dto.UpdatedAt = r.UpdatedAt;
             dto.Categories = [.. r.Categories
                 .Where(l => l.RecipeCategory != null)
