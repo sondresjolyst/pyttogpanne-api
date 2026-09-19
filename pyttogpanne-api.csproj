@@ -11,7 +11,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <Product>pyttogpanne</Product>
     <Version>0.1.0</Version>
-    <UserSecretsId>296344c8-b45b-45a5-9825-dccfe7d8c95f</UserSecretsId>
+    <UserSecretsId>6d29d14a-36d2-44b9-b7f6-ca05cce21200</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
