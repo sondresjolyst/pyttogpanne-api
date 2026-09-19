@@ -32,15 +32,24 @@ namespace pyttogpanne_api.Models.Recipes
 
         public string? Tips { get; set; }
 
-        [MaxLength(32)]
-        public string? CoverImageId { get; set; }
-        public ContentImage? CoverImage { get; set; }
+
+        /// <summary>
+        /// Set when the item is advertising: free products, a discount or a paid partnership.
+        /// Forbrukertilsynet treats free products with an underlying expectation of exposure as
+        /// advertising even without an agreement, so this is the author's call to make per item.
+        /// </summary>
+        public bool IsAdvertising { get; set; }
+
+        /// <summary>Who the advertiser is, shown next to the label when it is filled in.</summary>
+        [MaxLength(120)]
+        public string? Advertiser { get; set; }
 
         public bool IsPublished { get; set; }
         public DateTime? PublishedAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        public List<RecipeImage> Images { get; set; } = [];
         public List<RecipeIngredient> Ingredients { get; set; } = [];
         public List<RecipeStep> Steps { get; set; } = [];
         public List<RecipeCategoryLink> Categories { get; set; } = [];

@@ -16,7 +16,10 @@ namespace pyttogpanne_api.Features.Recipes
                 .AsNoTracking()
                 .Include(r => r.Ingredients)
                 .Include(r => r.Steps)
-                .Include(r => r.Categories).ThenInclude(l => l.RecipeCategory);
+                .Include(r => r.Images)
+                .Include(r => r.Categories).ThenInclude(l => l.RecipeCategory)
+                // Four collections in one query multiply out; split keeps each one flat.
+                .AsSplitQuery();
 
         public static async Task<IResult> GetAll(HttpContext http, ApplicationDbContext db, CancellationToken ct,
             string? category = null, string? search = null, bool all = false)
@@ -25,7 +28,9 @@ namespace pyttogpanne_api.Features.Recipes
 
             var query = db.Recipes
                 .AsNoTracking()
+                .Include(r => r.Images)
                 .Include(r => r.Categories).ThenInclude(l => l.RecipeCategory)
+                .AsSplitQuery()
                 .AsQueryable();
 
             if (!includeDrafts)

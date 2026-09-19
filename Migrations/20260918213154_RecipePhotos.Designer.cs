@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using pyttogpanne_api.Models;
@@ -11,9 +12,11 @@ using pyttogpanne_api.Models;
 namespace pyttogpanne_api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260918213154_RecipePhotos")]
+    partial class RecipePhotos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -433,39 +436,6 @@ namespace pyttogpanne_api.Migrations
                     b.ToTable("DeletedRecipes");
                 });
 
-            modelBuilder.Entity("pyttogpanne_api.Models.Recipes.GearImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Caption")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("ContentImageId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<int>("GearItemId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContentImageId");
-
-                    b.HasIndex("GearItemId", "ContentImageId")
-                        .IsUnique();
-
-                    b.ToTable("GearImages");
-                });
-
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.GearItem", b =>
                 {
                     b.Property<int>("Id")
@@ -474,19 +444,16 @@ namespace pyttogpanne_api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Advertiser")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ContentImageId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsAdvertising")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -518,6 +485,8 @@ namespace pyttogpanne_api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ContentImageId");
+
                     b.HasIndex("Slug")
                         .IsUnique();
 
@@ -531,10 +500,6 @@ namespace pyttogpanne_api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Advertiser")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
 
                     b.Property<int?>("CookMinutes")
                         .HasColumnType("integer");
@@ -550,9 +515,6 @@ namespace pyttogpanne_api.Migrations
                     b.Property<string>("Intro")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsAdvertising")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -905,23 +867,14 @@ namespace pyttogpanne_api.Migrations
                     b.Navigation("ContentImage");
                 });
 
-            modelBuilder.Entity("pyttogpanne_api.Models.Recipes.GearImage", b =>
+            modelBuilder.Entity("pyttogpanne_api.Models.Recipes.GearItem", b =>
                 {
                     b.HasOne("pyttogpanne_api.Models.ContentImage", "ContentImage")
                         .WithMany()
                         .HasForeignKey("ContentImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("pyttogpanne_api.Models.Recipes.GearItem", "GearItem")
-                        .WithMany("Images")
-                        .HasForeignKey("GearItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("ContentImage");
-
-                    b.Navigation("GearItem");
                 });
 
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.RecipeCategoryLink", b =>
@@ -994,11 +947,6 @@ namespace pyttogpanne_api.Migrations
             modelBuilder.Entity("pyttogpanne_api.Models.ContentImage", b =>
                 {
                     b.Navigation("Variants");
-                });
-
-            modelBuilder.Entity("pyttogpanne_api.Models.Recipes.GearItem", b =>
-                {
-                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.Recipe", b =>

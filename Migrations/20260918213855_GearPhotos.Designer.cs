@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using pyttogpanne_api.Models;
@@ -11,9 +12,11 @@ using pyttogpanne_api.Models;
 namespace pyttogpanne_api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260918213855_GearPhotos")]
+    partial class GearPhotos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -474,19 +477,12 @@ namespace pyttogpanne_api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Advertiser")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsAdvertising")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -532,10 +528,6 @@ namespace pyttogpanne_api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Advertiser")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
                     b.Property<int?>("CookMinutes")
                         .HasColumnType("integer");
 
@@ -550,9 +542,6 @@ namespace pyttogpanne_api.Migrations
                     b.Property<string>("Intro")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsAdvertising")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");

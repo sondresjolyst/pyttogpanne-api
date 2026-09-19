@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using pyttogpanne_api.Constants;
+using Microsoft.EntityFrameworkCore;
 using pyttogpanne_api.Features.Gear;
+using pyttogpanne_api.Infrastructure;
+using pyttogpanne_api.Models;
 using System.Security.Claims;
 using Xunit;
 
@@ -46,6 +49,58 @@ public class GearSlicesTests : TestBase
         var second = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(Input(), db, default));
 
         Assert.Equal("stormkjokken-2", second.Value!.Slug);
+    }
+
+    [Fact]
+    public async Task Create_TakesTheFirstPhotoAsTheCover()
+    {
+        await using var db = CreateDbContext();
+
+        var input = Input();
+        input.Images = [
+            new GalleryImageInput { ContentImageId = "aaaa", Caption = "Brennaren i bruk" },
+            new GalleryImageInput { ContentImageId = "bbbb" },
+        ];
+
+        var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(input, db, default));
+
+        Assert.Equal(["aaaa", "bbbb"], created.Value!.Images.Select(i => i.ContentImageId));
+        Assert.Equal("aaaa", created.Value.CoverImageId);
+        Assert.Equal("Brennaren i bruk", created.Value.Images[0].Caption);
+    }
+
+    [Fact]
+    public async Task Update_ReorderingThePhotosChangesTheCover()
+    {
+        await using var db = CreateDbContext();
+
+        var input = Input();
+        input.Images = [new GalleryImageInput { ContentImageId = "aaaa" }, new GalleryImageInput { ContentImageId = "bbbb" }];
+        var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(input, db, default));
+
+        input.Images = [new GalleryImageInput { ContentImageId = "bbbb" }, new GalleryImageInput { ContentImageId = "aaaa" }];
+        var ok = Assert.IsType<Ok<GearItemDto>>(
+            await GearEndpoints.Update(created.Value!.Id, input, db, new FakeImageStorage(), default));
+
+        Assert.Equal("bbbb", ok.Value!.CoverImageId);
+    }
+
+    [Fact]
+    public async Task Delete_RemovesTheStoredPhotos()
+    {
+        await using var db = CreateDbContext();
+        db.ContentImages.Add(new ContentImage { Id = "aaaa", FileName = "a.png", ContentType = "image/png", StoredPath = "a.png" });
+        await db.SaveChangesAsync();
+
+        var input = Input();
+        input.Images = [new GalleryImageInput { ContentImageId = "aaaa" }];
+        var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(input, db, default));
+
+        var storage = new FakeImageStorage();
+        await GearEndpoints.Delete(created.Value!.Id, db, storage, default);
+
+        Assert.Equal(1, storage.DeleteCount);
+        Assert.Empty(await db.ContentImages.ToListAsync());
     }
 
     [Fact]
@@ -109,7 +164,7 @@ public class GearSlicesTests : TestBase
         var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(Input(), db, default));
 
         var ok = Assert.IsType<Ok<GearItemDto>>(
-            await GearEndpoints.Update(created.Value!.Id, Input(title: "Gassbrennar"), db, default));
+            await GearEndpoints.Update(created.Value!.Id, Input(title: "Gassbrennar"), db, new FakeImageStorage(), default));
 
         Assert.Equal("gassbrennar", ok.Value!.Slug);
     }
@@ -118,7 +173,7 @@ public class GearSlicesTests : TestBase
     public async Task Update_Missing_Returns404()
     {
         await using var db = CreateDbContext();
-        Assert.IsType<NotFound>(await GearEndpoints.Update(404, Input(), db, default));
+        Assert.IsType<NotFound>(await GearEndpoints.Update(404, Input(), db, new FakeImageStorage(), default));
     }
 
     [Fact]
@@ -127,7 +182,7 @@ public class GearSlicesTests : TestBase
         await using var db = CreateDbContext();
         var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(Input(), db, default));
 
-        Assert.IsType<NoContent>(await GearEndpoints.Delete(created.Value!.Id, db, default));
+        Assert.IsType<NoContent>(await GearEndpoints.Delete(created.Value!.Id, db, new FakeImageStorage(), default));
         Assert.IsType<NotFound>(await GearEndpoints.GetBySlug("stormkjokken", AsAdmin(), db, default));
     }
 }

@@ -4,6 +4,7 @@ using pyttogpanne_api.Helpers;
 using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models;
 using pyttogpanne_api.Models.Recipes;
+using pyttogpanne_api.Services;
 
 namespace pyttogpanne_api.Features.Recipes
 {
@@ -17,7 +18,7 @@ namespace pyttogpanne_api.Features.Recipes
 
             var recipe = new Recipe
             {
-                Slug = await UniqueSlugAsync(dto.Title, null, db, ct),
+                Slug = await Slugify.UniqueAsync(db.Recipes.Select(r => r.Slug), dto.Title, "oppskrift", ct),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -36,11 +37,12 @@ namespace pyttogpanne_api.Features.Recipes
             return TypedResults.Created($"/api/recipes/{recipe.Slug}", RecipeMapping.ToDetail(created!));
         }
 
-        public static async Task<IResult> Update(int id, RecipeInput dto, ApplicationDbContext db, CancellationToken ct)
+        public static async Task<IResult> Update(int id, RecipeInput dto, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
         {
             var recipe = await db.Recipes
                 .Include(r => r.Ingredients)
                 .Include(r => r.Steps)
+                .Include(r => r.Images)
                 .Include(r => r.Categories)
                 .FirstOrDefaultAsync(r => r.Id == id, ct);
             if (recipe == null) return TypedResults.NotFound();
@@ -52,7 +54,7 @@ namespace pyttogpanne_api.Features.Recipes
             var oldSlug = recipe.Slug;
 
             if (!string.Equals(recipe.Title, dto.Title.Trim(), StringComparison.Ordinal))
-                recipe.Slug = await UniqueSlugAsync(dto.Title, recipe.Id, db, ct);
+                recipe.Slug = await Slugify.UniqueAsync(db.Recipes.Where(r => r.Id != recipe.Id).Select(r => r.Slug), dto.Title, "oppskrift", ct);
 
             ApplyScalars(recipe, dto);
             recipe.UpdatedAt = DateTime.UtcNow;
@@ -60,6 +62,10 @@ namespace pyttogpanne_api.Features.Recipes
             if (recipe.IsPublished && !wasPublished)
                 recipe.PublishedAt ??= DateTime.UtcNow;
 
+            var droppedImages = ImageIdsOf(recipe);
+
+            db.RecipeImages.RemoveRange(recipe.Images);
+            recipe.Images.Clear();
             db.RecipeIngredients.RemoveRange(recipe.Ingredients);
             recipe.Ingredients.Clear();
             db.RecipeSteps.RemoveRange(recipe.Steps);
@@ -76,48 +82,59 @@ namespace pyttogpanne_api.Features.Recipes
                 await ClearTombstoneAsync(recipe.Slug, db, ct);
 
             await db.SaveChangesAsync(ct);
+            await ImageCleanup.DeleteOrphansAsync(droppedImages, db, images, ct);
 
             var updated = await LoadAsync(recipe.Id, db, ct);
             return TypedResults.Ok(RecipeMapping.ToDetail(updated!));
         }
 
-        public static async Task<IResult> Delete(int id, ApplicationDbContext db, CancellationToken ct)
+        public static async Task<IResult> Delete(int id, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
         {
-            var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id, ct);
+            var recipe = await db.Recipes
+                .Include(r => r.Images)
+                .Include(r => r.Steps)
+                .FirstOrDefaultAsync(r => r.Id == id, ct);
             if (recipe == null) return TypedResults.NotFound();
+
+            var droppedImages = ImageIdsOf(recipe);
 
             await AddTombstoneAsync(recipe.Slug, db, ct);
             db.Recipes.Remove(recipe);
             await db.SaveChangesAsync(ct);
+            await ImageCleanup.DeleteOrphansAsync(droppedImages, db, images, ct);
+
             return TypedResults.NoContent();
         }
 
         private static void ApplyScalars(Recipe recipe, RecipeInput dto)
         {
             recipe.Title = dto.Title.Trim();
-            recipe.Intro = Trimmed(dto.Intro);
+            recipe.Intro = Text.Trimmed(dto.Intro);
             recipe.Servings = dto.Servings;
             recipe.PrepMinutes = dto.PrepMinutes;
             recipe.CookMinutes = dto.CookMinutes;
             recipe.Difficulty = Enum.Parse<RecipeDifficulty>(dto.Difficulty, ignoreCase: true);
-            recipe.Tips = Trimmed(dto.Tips);
-            recipe.CoverImageId = Trimmed(dto.CoverImageId);
+            recipe.Tips = Text.Trimmed(dto.Tips);
             recipe.IsPublished = dto.IsPublished;
+            recipe.IsAdvertising = dto.IsAdvertising;
+            recipe.Advertiser = Text.Trimmed(dto.Advertiser);
         }
 
         private static void ApplyChildren(Recipe recipe, RecipeInput dto)
         {
+            GalleryImages.Replace(recipe.Images, dto.Images);
+
             var order = 0;
             foreach (var i in dto.Ingredients)
             {
                 recipe.Ingredients.Add(new RecipeIngredient
                 {
                     SortOrder = order++,
-                    GroupName = Trimmed(i.GroupName),
-                    Amount = Trimmed(i.Amount),
-                    Unit = Trimmed(i.Unit),
+                    GroupName = Text.Trimmed(i.GroupName),
+                    Amount = Text.Trimmed(i.Amount),
+                    Unit = Text.Trimmed(i.Unit),
                     Name = i.Name.Trim(),
-                    Note = Trimmed(i.Note)
+                    Note = Text.Trimmed(i.Note)
                 });
             }
 
@@ -128,13 +145,20 @@ namespace pyttogpanne_api.Features.Recipes
                 {
                     SortOrder = order++,
                     Text = s.Text.Trim(),
-                    ContentImageId = Trimmed(s.ContentImageId)
+                    ContentImageId = Text.Trimmed(s.ContentImageId)
                 });
             }
 
             foreach (var categoryId in dto.CategoryIds.Distinct())
                 recipe.Categories.Add(new RecipeCategoryLink { RecipeCategoryId = categoryId });
         }
+
+        /// <summary>Every uploaded image the recipe points at: its gallery and its step photos.</summary>
+        private static List<string> ImageIdsOf(Recipe recipe) =>
+        [
+            .. recipe.Images.Select(i => i.ContentImageId),
+            .. recipe.Steps.Where(step => step.ContentImageId != null).Select(step => step.ContentImageId!),
+        ];
 
         private static async Task<bool> UnknownCategoryAsync(List<int> ids, ApplicationDbContext db, CancellationToken ct)
         {
@@ -165,26 +189,9 @@ namespace pyttogpanne_api.Features.Recipes
                 .AsNoTracking()
                 .Include(r => r.Ingredients)
                 .Include(r => r.Steps)
+                .Include(r => r.Images)
                 .Include(r => r.Categories).ThenInclude(l => l.RecipeCategory)
                 .FirstOrDefaultAsync(r => r.Id == id, ct);
-
-        private static async Task<string> UniqueSlugAsync(string title, int? excludeId, ApplicationDbContext db, CancellationToken ct)
-        {
-            var baseSlug = Slugify.Create(title);
-            if (string.IsNullOrEmpty(baseSlug)) baseSlug = "oppskrift";
-
-            var slug = baseSlug;
-            var suffix = 2;
-            while (await db.Recipes.AnyAsync(r => r.Slug == slug && r.Id != excludeId, ct))
-            {
-                slug = $"{baseSlug}-{suffix}";
-                suffix++;
-            }
-            return slug;
-        }
-
-        private static string? Trimmed(string? value) =>
-            string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
         public class Endpoints : IEndpoint
         {
