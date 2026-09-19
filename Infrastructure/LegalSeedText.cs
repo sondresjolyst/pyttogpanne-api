@@ -18,35 +18,39 @@ namespace pyttogpanne_api.Infrastructure
         private const string TermsNo = """
 ## 1. Om oss
 
-Denne nettsiden og appen blir drivne av Pyttogpanne.
-Kontaktopplysningar blir fylte ut av Pyttogpanne i admin.
+Appen og disse sidene drives av:
+
+- **Selskap:** Sjølyst Innovation AS
+- **Organisasjonsnummer:** 938 517 789
+- **Adresse:** Mårvegen 21a, 4347 Lye
+
+Oppskriftene er laget av Pyttogpanne, som også står bak
+[@pyttogpanne](https://www.instagram.com/pyttogpanne/) på Instagram.
 
 ## 2. Aksept av vilkårene
 
-Ved å bruke Pyttogpanne godtar du disse vilkårene. Er du uenig, bør du ikke bruke nettsiden.
+Ved å bruke Pyttogpanne godtar du disse vilkårene. Er du uenig, bør du ikke bruke tjenesten.
 
 ## 3. Bruk av tjenesten
 
-Pyttogpanne viser datamaskiner vi har bygget — både maskiner som er til salgs og maskiner som er
-solgt — og lar deg ta kontakt for å få et tilbud. Det er bare vi som drifter nettsiden som kan logge
-inn.
+Pyttogpanne viser oppskrifter på turmat laget i én panne. Oppskriftene leses i appen, og du trenger
+ingen konto.
 
 ## 4. Immaterielle rettigheter
 
-Alt innhold på siden — tekst, bilder, spesifikasjoner og navnet og logoen til Pyttogpanne — eies av
-Pyttogpanne. Innholdet kan ikke kopieres, publiseres på nytt eller brukes i egen markedsføring uten
-skriftlig samtykke fra oss.
+Alt innhold i tjenesten, tekst, bilder og oppskrifter, eies av Pyttogpanne. Innholdet kan ikke
+kopieres, publiseres på nytt eller brukes i egen markedsføring uten skriftlig samtykke fra oss.
 
-## 5. Henvendelser og bestilling
+## 5. Matlaging på eget ansvar
 
-Å sende inn kontaktskjemaet er en forespørsel, ikke en bindende avtale. Hva som skal leveres, hvilke
-deler som inngår og hva det koster, avtaler du direkte med oss.
+Oppskriftene er skrevet for matlaging ute, ofte med gassbrenner eller åpen ild. Du har selv ansvar
+for trygg bruk av utstyret, for å følge lokale regler om bålbrenning, og for å vurdere innholdet opp
+mot allergier og intoleranser.
 
-## 6. Priser og spesifikasjoner
+## 6. Innhold merket som reklame
 
-Prisen og delelisten som står oppført på en datamaskin, gjelder maskinen slik den var satt sammen da
-den ble lagt ut. Delepriser endrer seg, så en tilsvarende maskin kan koste noe annet i dag. En
-datamaskin som er merket som solgt, er ikke lenger til salgs.
+Innhold merket «Reklame» er laget etter at Pyttogpanne har mottatt produkter, rabatt eller betaling.
+Merkingen følger kravene fra Forbrukertilsynet.
 
 ## 7. Tilgjengelighet
 
@@ -65,32 +69,31 @@ norske domstoler.
 
 ## 10. Endringer
 
-Vi kan oppdatere vilkårene. Det er versjonen som står her, med datoen øverst, som gjelder.
+Vi kan oppdatere vilkårene. Det er versjonen som står her, med datoen nederst, som gjelder.
 
 ## 11. Kontakt
 
-Spørsmål om vilkårene? [Ta kontakt](/no/contact).
+Spørsmål om vilkårene? Ta kontakt via [@pyttogpanne](https://www.instagram.com/pyttogpanne/) på
+Instagram.
 """;
 
         private const string PrivacyNo = """
 ## Behandlingsansvarlig
 
-Pyttogpanne er behandlingsansvarlig for personopplysninger som samles inn gjennom denne nettsiden.
+Sjølyst Innovation AS er behandlingsansvarlig for personopplysninger som samles inn gjennom appen og
+disse sidene.
 
 ## Hvilke opplysninger vi samler inn
 
-- **Henvendelser:** navn, e-post, telefonnummer, bruksområde, budsjett og meldingen du sender inn i
-  kontaktskjemaet.
-- **Brukerkontoer:** navn, e-postadresse og passord (lagret som hash). Kontoer opprettes kun for oss
-  som drifter siden — det er ingen registrering for besøkende.
-- **Bruksdata:** enkle tjenerlogger (anonyme bruker-ID-er, forespurte adresser) til feilsøking og
-  sikkerhet.
+- **Favoritter og handleliste:** lagres på telefonen din. De sendes ikke til oss, og vi har ingen
+  tilgang til dem.
+- **Brukerkontoer:** navn, e-postadresse og passord (lagret som hash).
+- **Bruksdata:** enkle tjenerlogger (IP-adresse, forespurte adresser) til feilsøking og sikkerhet.
 
-Vi samler ikke inn betalingsopplysninger gjennom denne siden.
+Vi samler ikke inn betalingsopplysninger, og vi bruker ingen analyse- eller sporingsverktøy.
 
 ## Hva vi bruker opplysningene til
 
-- Å svare på henvendelsen din og avtale arbeidet du spør om.
 - Å sende e-post knyttet til innlogging (invitasjon, tilbakestilling av passord).
 - Å forbedre tjenesten og finne tekniske feil.
 
@@ -98,48 +101,45 @@ Vi bruker ikke opplysningene til markedsføring, og vi selger dem ikke videre.
 
 ## Behandlingsgrunnlag
 
-- **Avtale (art. 6 nr. 1 bokstav b)** — kontoopplysninger og e-post om innlogging er nødvendige for å
+Vi behandler personopplysninger på følgende grunnlag (personvernforordningen artikkel 6):
+
+- **Avtale (art. 6 nr. 1 bokstav b):** kontoopplysninger og e-post om innlogging er nødvendige for å
   gi tilgang til administrasjonssidene.
-- **Berettiget interesse (art. 6 nr. 1 bokstav f)** — henvendelser behandles for at vi skal kunne
-  svare deg, og tjenerlogger oppbevares for sikkerhet og feilsøking. Interessen vår går ikke foran
-  rettighetene dine — du kan protestere når som helst.
+- **Berettiget interesse (art. 6 nr. 1 bokstav f):** tjenerlogger oppbevares for sikkerhet og
+  feilsøking. Interessen vår går ikke foran rettighetene dine, og du kan protestere når som helst.
 
 ## Deling av opplysninger
 
-Vi selger ikke personopplysninger. Plattformen driftes på infrastruktur vi styrer selv; det er ingen
+Vi selger ikke personopplysninger. Tjenesten driftes på infrastruktur vi styrer selv, uten
 skyleverandør bak. Vi bruker én databehandler:
 
-- [Brevo](https://www.brevo.com/legal/termsofuse/) (Frankrike, EØS) — utsending av e-post
-  (invitasjon, tilbakestilling av passord) og videresending av henvendelser fra kontaktskjemaet.
-  E-postadressen din og innholdet i e-posten deles med Brevo kun til dette formålet.
+- [Brevo](https://www.brevo.com/legal/termsofuse/) (Frankrike, EØS): utsending av e-post om
+  innlogging. E-postadressen til den som har konto deles med Brevo kun til dette formålet.
 
 Vi kan i tillegg utlevere opplysninger når loven krever det.
 
 ## Lagringstid
 
-- **Henvendelser** — så lenge det trengs for å håndtere forespørselen og eventuell oppfølging,
-  deretter slettes de.
-- **Kontoopplysninger** — til kontoen slettes, hvorpå navn, e-post og passord fjernes.
-- **Tjenerlogger** — 90 dager. **Måledata** — 60 dager.
-- **Sikkerhetskopier av databasen** — kryptert. Etter sletting kan rester ligge i sikkerhetskopier i
-  inntil omtrent 6 måneder til rotasjonen er fullført. Sikkerhetskopier brukes ikke til behandling.
+- **Kontoopplysninger:** til kontoen slettes, hvorpå navn, e-post og passord fjernes.
+- **Tjenerlogger:** 90 dager.
+- **Sikkerhetskopier av databasen:** krypterte. Etter sletting kan rester ligge i sikkerhetskopier i
+  inntil omtrent 6 måneder, til rotasjonen er fullført. Sikkerhetskopier brukes ikke til behandling.
 
 ## Rettighetene dine
 
 Etter personvernforordningen har du rett til:
 
-- **Innsyn og dataportabilitet** — [ta kontakt](/no/contact) for en kopi av opplysningene vi har om
-  deg.
-- **Sletting** — [ta kontakt](/no/contact) for å få slettet henvendelsen din og opplysningene i den.
-- **Retting** — [ta kontakt](/no/contact) hvis noe er feil.
-- **Protest** — du kan protestere mot behandling som bygger på berettiget interesse.
+- **Innsyn og dataportabilitet:** ta kontakt for en kopi av opplysningene vi har om deg.
+- **Sletting:** ta kontakt for å få opplysningene dine slettet.
+- **Retting:** ta kontakt hvis noe er feil.
+- **Protest:** du kan protestere mot behandling som bygger på berettiget interesse.
 
-Henvendelser sendes til kontaktadressa som er oppgitt i appen. Du kan også klage
-til Datatilsynet.
+Henvendelser sendes via [@pyttogpanne](https://www.instagram.com/pyttogpanne/) på Instagram. Du kan
+også klage til Datatilsynet.
 
 ## Informasjonskapsler
 
-Vi bruker informasjonskapsler til innlogging og økter. Se
+Appen bruker ingen informasjonskapsler. På nett brukes de til innlogging. Se
 [informasjonskapsler](/no/cookies) for detaljer.
 """;
 
@@ -149,15 +149,20 @@ Vi bruker informasjonskapsler til innlogging og økter. Se
 Informasjonskapsler er små tekstfiler som lagres i nettleseren din. De lar en nettside huske økten
 din mellom forespørsler.
 
-## Kapslene vi bruker
+## I appen
 
-Å surfe på siden setter ingen kapsler for sporing eller annonser. Kapslene under settes bare når noen
-logger inn.
+Appen bruker ingen informasjonskapsler. Oppskrifter, favoritter og handleliste lagres på telefonen,
+slik at appen virker uten dekning.
+
+## Kapslene vi bruker på nett
+
+Å lese disse sidene setter ingen kapsler for sporing eller annonser. Kapslene under settes bare ved
+innlogging.
 
 | Navn | Formål | Varighet |
 | --- | --- | --- |
-| `next-auth.session-token` | Holder deg innlogget | Økt / 30 dager |
-| `next-auth.csrf-token` | Sikkerhet — hindrer forfalskning av forespørsler på tvers av nettsteder | Økt |
+| `next-auth.session-token` | Holder deg innlogget | Økt eller 30 dager |
+| `next-auth.csrf-token` | Sikkerhet, hindrer forfalskning av forespørsler på tvers av nettsteder | Økt |
 | `next-auth.callback-url` | Husker hvor du skal sendes etter innlogging | Økt |
 
 ## Tredjeparter
@@ -167,11 +172,11 @@ Vi bruker ingen kapsler fra tredjeparter til analyse, annonsering eller sporing.
 ## Hvordan styre kapsler
 
 Du kan slette eller blokkere informasjonskapsler i nettleserinnstillingene. Å blokkere kapslene over
-påvirker bare det å holde seg innlogget; resten av siden virker uten dem.
+påvirker innlogging.
 
 ## Spørsmål?
 
-[Ta kontakt](/no/contact) hvis du lurer på noe rundt bruken av informasjonskapsler.
+Ta kontakt via [@pyttogpanne](https://www.instagram.com/pyttogpanne/) på Instagram.
 """;
     }
 }
