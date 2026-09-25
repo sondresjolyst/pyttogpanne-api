@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.1...v1.0.2) (2026-09-25)
+
+
+### Bug Fixes
+
+* add an anonymous health endpoint ([#20](https://github.com/sondresjolyst/pyttogpanne-api/issues/20)) ([9dbe002](https://github.com/sondresjolyst/pyttogpanne-api/commit/9dbe002d3728e06c5f8654d099432b7e1404244b))
+
 ## [1.0.1](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.0...v1.0.1) (2026-09-21)
 
 
