@@ -2,97 +2,88 @@
   <img src="docs/pyttogpanne.png" alt="Pyttogpanne" width="220">
 </p>
 
-<p align="center">
-  The backend behind Pyttogpanne — recipes, categories, gear tips, and the images that go with them.
-</p>
+# pyttogpanne-api
 
----
+API for Pyttogpanne. Content is written in
+[pyttogpanne-app](https://github.com/sondresjolyst/pyttogpanne-app) and read by
+[pyttogpanne-mobile](https://github.com/sondresjolyst/pyttogpanne-mobile).
 
-pyttogpanne-api is the API for **Pyttogpanne** — turmat cooked in one pan on a gas
-burner. It stores the recipes Pyttogpanne writes, serves them to the mobile app,
-and backs the admin console in
-[pyttogpanne-app](https://github.com/sondresjolyst/pyttogpanne-app).
+## Stack
 
-## What it does
+ASP.NET Core 10, PostgreSQL through EF Core and Npgsql, ASP.NET Identity with
+JWT, Mapster, Serilog, AspNetCoreRateLimit, Brevo.
 
-- **Recipes** — ingredients and steps in order, servings, times, difficulty and
-  categories. Drafts stay hidden until they are published.
-- **Offline sync** — the app pulls every published recipe in one call and asks
-  for changes since its last sync. Recipes that are deleted, unpublished or
-  renamed are reported back so a cached copy is dropped.
-- **Gear and trail tips** — markdown articles alongside the recipes.
-- **Images** — uploaded once, stored on a mounted volume and served in the size
-  the caller asks for.
-- **Accounts** — login, JWT + refresh tokens, password reset and roles. Admins
-  are invited; there is no public registration.
-- **Site content** — legal pages, company details and settings for the admin
-  console.
-
-Built as vertical slices (minimal API endpoints + FluentValidation), with
-PostgreSQL via EF Core.
-
----
-
-## For developers
-
-<details>
-<summary>Run, configure, and test from source</summary>
-
-### Stack
-
-ASP.NET Core · PostgreSQL (EF Core / Npgsql) · ASP.NET Identity + JWT · Mapster ·
-Serilog · AspNetCoreRateLimit · SkiaSharp · Brevo.
-
-### Run locally
+## Quick start
 
 ```bash
 dotnet restore
-dotnet run     # Swagger at /swagger
+dotnet ef database update   # needs a local Postgres, see appsettings.Development.json
+dotnet run                  # Swagger at /swagger
 ```
 
-Pending migrations are applied at startup, against `ConnectionStrings:DefaultConnection`.
-Create the database with `ENCODING UTF8`: recipe text is full of æ, ø and å.
+## Environment
 
-The first admin is seeded from configuration; further admins are invited from the
-admin console.
+Production reads these from the cluster secret.
 
-### Configuration
-
-| Setting | What it's for |
+| Variable | Used for |
 | --- | --- |
-| `ConnectionStrings:DefaultConnection` | PostgreSQL connection string. |
-| `Jwt:Key`, `Jwt:Issuer` | Signs and validates tokens. The app verifies with the same key. |
-| `Cors:AllowedOrigins` | Origins allowed to call the API with credentials. |
-| `TrustedProxies` | CIDRs allowed to set `X-Forwarded-For`. Empty when there is no proxy in front; a wildcard lets any caller forge the client IP the rate limiter reads. |
-| `Storage:ImagesPath` | Where uploaded images are written. |
-| `Site:BaseUrl` | Used in emails and generated links. |
+| `ConnectionStrings__DefaultConnection` | PostgreSQL connection string |
+| `Jwt__Key`, `Jwt__Issuer` | JWT signing key and issuer. The key must match the app's `PYTTOGPANNE_API_JWT_SECRET` |
+| `BrevoSettings__ApiKey`, `BrevoSettings__SenderEmail`, `BrevoSettings__SenderName` | Transactional email |
+| `Seed__AdminEmail`, `Seed__AdminPassword` | First admin, created at startup |
+| `Site__BaseUrl` | Used in links sent by email |
+| `Storage__ImagesPath` | Mount for uploaded images, `/data/images` in the cluster |
 
-### Tests
+## What it serves
 
-```bash
-dotnet build pyttogpanne-api.Tests/pyttogpanne-api.Tests.csproj
-./pyttogpanne-api.Tests/bin/Debug/net10.0/pyttogpanne-api.Tests.exe
-```
+| Area | Holds |
+| --- | --- |
+| Recipes | Ingredients and ordered steps, times, servings, difficulty, categories, photos. Drafts stay unpublished until released to the app |
+| Categories | The filters recipes are listed under |
+| Articles | Gear and trail tips, written in markdown |
+| Legal pages | Terms, privacy and cookies, per language |
+| Accounts | Sign-in, JWT and refresh tokens, roles. Invitation only, no public sign-up |
 
-xUnit v3 builds the test project as an executable and is invoked directly;
-`dotnet test` discovers nothing on some local setups. Handlers are called as
-plain static methods against an in-memory context, so there is no test host to
-configure.
+Browse `/swagger` on a running instance for the current surface.
 
-### Migrations
+## Health
 
-```bash
-dotnet ef migrations add <Name> --project pyttogpanne-api.csproj
-```
+| Path | Reports |
+| --- | --- |
+| `/health` | The process is up. No dependency checks, so a database outage does not restart the pod |
+| `/health/ready` | The database connection. Fails while Postgres is unreachable, which takes the pod out of its Service |
 
-### Layout
+Both are anonymous, and both are blocked at the ingress: only the kubelet
+reaches them, over the pod address.
 
-```
-Features/        one folder per slice, each mapping its own routes
-Models/          EF entities and the DbContext
-Services/        image storage, email, background jobs
-Infrastructure/  endpoint registration, validation filter, seeding
-Migrations/      EF migrations
-```
+## Languages
 
-</details>
+`Constants/Locales.cs` lists the supported locales and `no` is the default.
+Legal text is stored per language. To add one, add its tag to
+`Locales.Supported` and seed its text.
+
+## Deployment
+
+Image [`sondresjo/pyttogpanne-api`](https://hub.docker.com/r/sondresjo/pyttogpanne-api)
+on Docker Hub, chart `pyttogpanne-api` in
+[tumogroup-charts](https://github.com/sondresjolyst/tumogroup-charts), applied by
+Flux from [tumo-flux](https://github.com/sondresjolyst/tumo-flux) to
+`pyttogpanne-dev` and `pyttogpanne-prod`.
+
+The container runs as the non-root `app` user with a read-only root filesystem,
+so anything written at runtime needs a volume. Uploaded images go to the
+`/data/images` mount, and the data protection key ring to `/home/app/.aspnet`.
+
+Migrations run at startup, so a deploy against a cold database can take a while.
+The startup probe allows for that before the liveness probe can restart the pod.
+
+A push to `main` builds the `dev` tag. A release-please release builds `vX.Y.Z`,
+tags it `latest` and opens a chart bump against
+[tumogroup-charts](https://github.com/sondresjolyst/tumogroup-charts). Cluster
+secrets are created by
+[`scripts/pyttogpanne/bootstrap.sh`](https://github.com/sondresjolyst/tumo-platform/blob/main/scripts/pyttogpanne/bootstrap.sh)
+in [tumo-platform](https://github.com/sondresjolyst/tumo-platform).
+
+## License
+
+Proprietary. Copyright (c) 2026 Sondre Sjølyst.
