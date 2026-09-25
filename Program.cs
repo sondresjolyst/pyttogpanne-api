@@ -4,6 +4,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -99,6 +100,9 @@ namespace pyttogpanne_api
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
             });
+
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<ApplicationDbContext>("db", tags: ["ready"]);
 
             builder.Services.AddAuthorization(options =>
             {
@@ -215,7 +219,11 @@ namespace pyttogpanne_api
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHsts();
-                app.UseHttpsRedirection();
+                // Probes reach the pod over plain HTTP and send no X-Forwarded-Proto, so a
+                // redirect would fail them if an HTTPS port is ever configured.
+                app.UseWhen(
+                    context => !context.Request.Path.StartsWithSegments("/health"),
+                    branch => branch.UseHttpsRedirection());
             }
 
             app.UseSwagger();
@@ -228,6 +236,17 @@ namespace pyttogpanne_api
             app.UseIpRateLimiting();
             app.MapControllers();
             app.MapEndpoints();
+            // Liveness and startup. Reports that the process is up, with no dependency checks,
+            // so a database outage does not restart the pod.
+            app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false })
+                .AllowAnonymous();
+
+            // Readiness. Fails while the database is unreachable, which takes the pod out of
+            // the Service instead of letting it serve errors.
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready")
+            }).AllowAnonymous();
             app.Run();
         }
     }
