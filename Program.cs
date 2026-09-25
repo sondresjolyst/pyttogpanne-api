@@ -100,6 +100,8 @@ namespace pyttogpanne_api
                 };
             });
 
+            builder.Services.AddHealthChecks();
+
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("Admin", policy => policy.RequireRole(RoleNames.Admin));
@@ -228,6 +230,7 @@ namespace pyttogpanne_api
             app.UseIpRateLimiting();
             app.MapControllers();
             app.MapEndpoints();
+            app.MapHealthChecks("/health").AllowAnonymous();
             app.Run();
         }
     }
