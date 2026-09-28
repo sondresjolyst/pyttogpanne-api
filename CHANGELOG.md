@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.2...v1.0.3) (2026-09-27)
+
+
+### Dependencies
+
+* **nuget:** bump `System.IdentityModel.Tokens.Jwt` from 8.22.0 to 8.23.0 ([#24](https://github.com/sondresjolyst/pyttogpanne-api/issues/24)) ([190e1b4](https://github.com/sondresjolyst/pyttogpanne-api/commit/190e1b4b58286a77371f21647bf52f40d6f2c4ff))
+* **nuget:** Bump the skiasharp group with 2 updates ([#23](https://github.com/sondresjolyst/pyttogpanne-api/issues/23)) ([b19bd59](https://github.com/sondresjolyst/pyttogpanne-api/commit/b19bd5939249fae0bc0f24c85e9cea8e5f5f9366))
+
 ## [1.0.2](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.1...v1.0.2) (2026-09-25)
 
 
