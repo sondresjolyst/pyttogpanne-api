@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.3...v1.0.4) (2026-10-03)
+
+
+### Bug Fixes
+
+* evict every refresh token past the cap, not just one ([#26](https://github.com/sondresjolyst/pyttogpanne-api/issues/26)) ([72a29c0](https://github.com/sondresjolyst/pyttogpanne-api/commit/72a29c08b329a98df70627738dfcf3fc4d1c5ed3))
+
 ## [1.0.3](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.2...v1.0.3) (2026-09-27)
 
 
