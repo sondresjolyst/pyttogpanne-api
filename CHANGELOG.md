@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.5](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.4...v1.0.5) (2026-10-04)
+
+
+### Dependencies
+
+* **nuget:** bump `Moq` from 4.20.72 to 4.21.0 ([#31](https://github.com/sondresjolyst/pyttogpanne-api/issues/31)) ([d607431](https://github.com/sondresjolyst/pyttogpanne-api/commit/d6074314e984067156b22c5be137d017e7b3e163))
+* **nuget:** Bump Mapster and Mapster.DependencyInjection ([#29](https://github.com/sondresjolyst/pyttogpanne-api/issues/29)) ([0babfa8](https://github.com/sondresjolyst/pyttogpanne-api/commit/0babfa8e3e99009e6fe1a1554e766e9a2cb95294))
+
 ## [1.0.4](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.3...v1.0.4) (2026-10-03)
 
 
