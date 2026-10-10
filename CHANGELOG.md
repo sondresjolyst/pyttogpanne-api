@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.5...v1.1.0) (2026-10-10)
+
+
+### Features
+
+* **branding:** add the branding endpoint the app uses ([#33](https://github.com/sondresjolyst/pyttogpanne-api/issues/33)) ([86fb4a0](https://github.com/sondresjolyst/pyttogpanne-api/commit/86fb4a0eb5f286829218f6bda1fcdaac8011fd85))
+
 ## [1.0.5](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.4...v1.0.5) (2026-10-04)
 
 
