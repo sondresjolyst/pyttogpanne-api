@@ -20,6 +20,7 @@ using Serilog;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using SjolystInnovation.AppKit.Auth;
 
 namespace pyttogpanne_api
 {
@@ -73,6 +74,7 @@ namespace pyttogpanne_api
                 });
 
             builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddAppKitAuth<ApplicationDbContext>(builder.Configuration.GetSection("Jwt"));
             builder.Services.AddSingleton<IImageStorageService, ImageStorageService>();
             builder.Services.AddHostedService<StatsSnapshotService>();
 

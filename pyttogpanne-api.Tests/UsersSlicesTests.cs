@@ -5,7 +5,7 @@ using Moq;
 using pyttogpanne_api.Features.Users;
 using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models;
-using pyttogpanne_api.Models.Auth;
+using SjolystInnovation.AppKit.Auth;
 using Xunit;
 
 namespace pyttogpanne_api.Tests;
