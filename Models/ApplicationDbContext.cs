@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using pyttogpanne_api.Models.Admin;
-using pyttogpanne_api.Models.Auth;
 using pyttogpanne_api.Models.Content;
 using pyttogpanne_api.Models.Recipes;
+using SjolystInnovation.AppKit.Auth;
 
 namespace pyttogpanne_api.Models
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : IdentityDbContext<User, IdentityRole, string>(options)
+        : IdentityDbContext<User, IdentityRole, string>(options), IAuthDbContext
     {
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<AppSettings> AppSettings { get; set; }
@@ -30,6 +30,7 @@ namespace pyttogpanne_api.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.AddAppKitRefreshTokens<User>();
 
             modelBuilder.Entity<DailyStatSnapshot>()
                 .HasIndex(s => s.Date)
