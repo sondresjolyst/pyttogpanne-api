@@ -14,24 +14,24 @@ public class SiteLinksTests
     [Fact]
     public void SetPassword_PointsAtTheConfiguredEnvironment()
     {
-        var link = SiteLinks.SetPassword(Config("https://dev.pyttogpanne.no"), "ny@pyttogpanne.no", "YB71WN");
+        var link = SiteLinks.SetPasswordPage(Config("https://dev.pyttogpanne.no"));
 
-        Assert.Equal("https://dev.pyttogpanne.no/no/reset-password?email=ny%40pyttogpanne.no&code=YB71WN", link);
+        Assert.Equal("https://dev.pyttogpanne.no/no/reset-password", link);
     }
 
     [Fact]
     public void SetPassword_TrimsATrailingSlash()
     {
-        var link = SiteLinks.SetPassword(Config("https://www.pyttogpanne.no/"), "a@b.no", "ABC123");
+        var link = SiteLinks.SetPasswordPage(Config("https://www.pyttogpanne.no/"));
 
-        Assert.StartsWith("https://www.pyttogpanne.no/no/reset-password?", link);
+        Assert.Equal("https://www.pyttogpanne.no/no/reset-password", link);
     }
 
     [Fact]
     public void SetPassword_FallsBackToProductionWhenUnset()
     {
-        var link = SiteLinks.SetPassword(Config(null), "a@b.no", "ABC123");
+        var link = SiteLinks.SetPasswordPage(Config(null));
 
-        Assert.StartsWith("https://www.pyttogpanne.no/no/reset-password?", link);
+        Assert.Equal("https://www.pyttogpanne.no/no/reset-password", link);
     }
 }
