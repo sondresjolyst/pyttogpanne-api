@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using SjolystInnovation.AppKit.SiteSettings;
 using System.ComponentModel.DataAnnotations.Schema;
-using pyttogpanne_api.Helpers;
 
 namespace pyttogpanne_api.Models.Admin
 {
-    public class AppSettings
+    public class AppSettings : ICompanySettings, IBrandingSettings
     {
         public int Id { get; set; } = 1;
 
