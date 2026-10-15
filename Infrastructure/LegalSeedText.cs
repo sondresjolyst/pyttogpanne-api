@@ -1,3 +1,5 @@
+using SjolystInnovation.AppKit.SiteSettings;
+
 namespace pyttogpanne_api.Infrastructure
 {
     /// <summary>
@@ -6,9 +8,7 @@ namespace pyttogpanne_api.Infrastructure
     /// </summary>
     public static class LegalSeedText
     {
-        public record Page(string Key, string Locale, string Title, string Body);
-
-        public static readonly Page[] All =
+        public static readonly LegalPageSeed[] All =
         [
             new("terms", "no", "Vilkår", TermsNo),
             new("privacy", "no", "Personvern", PrivacyNo),
