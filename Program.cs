@@ -156,7 +156,7 @@ namespace pyttogpanne_api
                 }
 
                 await SeedData.EnsureRecipeCategoriesAsync(context);
-                await SeedData.EnsureLegalPagesAsync(context);
+                await app.Services.SeedAppKitLegalPagesAsync<ApplicationDbContext>(LegalSeedText.All);
                 await app.Services.SeedAppKitFirstAdminAsync<User>(app.Configuration, (email, first, last) => new User { FirstName = first, LastName = last }, RoleNames.Admin);
 
                 if (app.Environment.IsDevelopment())
@@ -184,6 +184,11 @@ namespace pyttogpanne_api
             app.MapAppKitAuthEndpoints<User, ApplicationDbContext>(configure: o => o.IsActive = u => !u.IsDeleted);
             app.MapAppKitAccount<User>();
             app.MapAppKitSiteSettings<ApplicationDbContext, AppSettings>(configure: o => o.Policy = Policies.Admin);
+            app.MapAppKitLegalPages<ApplicationDbContext>(configure: o =>
+            {
+                o.Locales = Locales.Supported;
+                o.Policy = Policies.Admin;
+            });
             app.MapAppKitUserAdmin<User, ApplicationDbContext>(configure: o =>
             {
                 o.Roles = RoleNames.AllRoles;

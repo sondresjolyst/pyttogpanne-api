@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SjolystInnovation.AppKit.SiteSettings;
 using pyttogpanne_api.Models.Admin;
-using pyttogpanne_api.Models.Content;
 using pyttogpanne_api.Models.Recipes;
 using SjolystInnovation.AppKit.Auth;
 
@@ -36,9 +36,7 @@ namespace pyttogpanne_api.Models
                 .HasIndex(s => s.Date)
                 .IsUnique();
 
-            modelBuilder.Entity<LegalPage>()
-                .HasIndex(p => new { p.Key, p.Locale })
-                .IsUnique();
+            modelBuilder.AddAppKitLegalPages();
 
             modelBuilder.Entity<ContentImageVariant>()
                 .HasOne(v => v.ContentImage)
