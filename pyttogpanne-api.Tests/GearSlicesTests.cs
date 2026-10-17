@@ -73,6 +73,7 @@ public class GearSlicesTests : TestBase
     public async Task Update_ReorderingThePhotosChangesTheCover()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
 
         var input = Input();
         input.Images = [new GalleryImageInput { ContentImageId = "aaaa" }, new GalleryImageInput { ContentImageId = "bbbb" }];
@@ -80,7 +81,7 @@ public class GearSlicesTests : TestBase
 
         input.Images = [new GalleryImageInput { ContentImageId = "bbbb" }, new GalleryImageInput { ContentImageId = "aaaa" }];
         var ok = Assert.IsType<Ok<GearItemDto>>(
-            await GearEndpoints.Update(created.Value!.Id, input, db, new FakeImageStorage(), default));
+            await GearEndpoints.Update(created.Value!.Id, input, db, images.Service, default));
 
         Assert.Equal("bbbb", ok.Value!.CoverImageId);
     }
@@ -89,17 +90,17 @@ public class GearSlicesTests : TestBase
     public async Task Delete_RemovesTheStoredPhotos()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(new ContentImage { Id = "aaaa", FileName = "a.png", ContentType = "image/png", StoredPath = "a.png" });
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
         await db.SaveChangesAsync();
 
         var input = Input();
         input.Images = [new GalleryImageInput { ContentImageId = "aaaa" }];
         var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(input, db, default));
 
-        var storage = new FakeImageStorage();
-        await GearEndpoints.Delete(created.Value!.Id, db, storage, default);
+        await GearEndpoints.Delete(created.Value!.Id, db, images.Service, default);
 
-        Assert.Equal(1, storage.DeleteCount);
+        Assert.False(images.FileExists("aaaa"));
         Assert.Empty(await db.ContentImages.ToListAsync());
     }
 
@@ -161,10 +162,11 @@ public class GearSlicesTests : TestBase
     public async Task Update_NewTitle_ReSlugs()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(Input(), db, default));
 
         var ok = Assert.IsType<Ok<GearItemDto>>(
-            await GearEndpoints.Update(created.Value!.Id, Input(title: "Gassbrennar"), db, new FakeImageStorage(), default));
+            await GearEndpoints.Update(created.Value!.Id, Input(title: "Gassbrennar"), db, images.Service, default));
 
         Assert.Equal("gassbrennar", ok.Value!.Slug);
     }
@@ -173,16 +175,18 @@ public class GearSlicesTests : TestBase
     public async Task Update_Missing_Returns404()
     {
         await using var db = CreateDbContext();
-        Assert.IsType<NotFound>(await GearEndpoints.Update(404, Input(), db, new FakeImageStorage(), default));
+        using var images = new TestImages(db);
+        Assert.IsType<NotFound>(await GearEndpoints.Update(404, Input(), db, images.Service, default));
     }
 
     [Fact]
     public async Task Delete_RemovesTheItem()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var created = Assert.IsType<Created<GearItemDto>>(await GearEndpoints.Create(Input(), db, default));
 
-        Assert.IsType<NoContent>(await GearEndpoints.Delete(created.Value!.Id, db, new FakeImageStorage(), default));
+        Assert.IsType<NoContent>(await GearEndpoints.Delete(created.Value!.Id, db, images.Service, default));
         Assert.IsType<NotFound>(await GearEndpoints.GetBySlug("stormkjokken", AsAdmin(), db, default));
     }
 }

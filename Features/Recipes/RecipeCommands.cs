@@ -5,6 +5,7 @@ using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models;
 using pyttogpanne_api.Models.Recipes;
 using pyttogpanne_api.Services;
+using SjolystInnovation.AppKit.Storage.Images;
 
 namespace pyttogpanne_api.Features.Recipes
 {
@@ -37,7 +38,7 @@ namespace pyttogpanne_api.Features.Recipes
             return TypedResults.Created($"/api/recipes/{recipe.Slug}", RecipeMapping.ToDetail(created!));
         }
 
-        public static async Task<IResult> Update(int id, RecipeInput dto, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
+        public static async Task<IResult> Update(int id, RecipeInput dto, ApplicationDbContext db, IContentImageService images, CancellationToken ct)
         {
             var recipe = await db.Recipes
                 .Include(r => r.Ingredients)
@@ -82,13 +83,13 @@ namespace pyttogpanne_api.Features.Recipes
                 await ClearTombstoneAsync(recipe.Slug, db, ct);
 
             await db.SaveChangesAsync(ct);
-            await ImageCleanup.DeleteOrphansAsync(droppedImages, db, images, ct);
+            await images.DeleteOrphansAsync(droppedImages, ct);
 
             var updated = await LoadAsync(recipe.Id, db, ct);
             return TypedResults.Ok(RecipeMapping.ToDetail(updated!));
         }
 
-        public static async Task<IResult> Delete(int id, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
+        public static async Task<IResult> Delete(int id, ApplicationDbContext db, IContentImageService images, CancellationToken ct)
         {
             var recipe = await db.Recipes
                 .Include(r => r.Images)
@@ -101,7 +102,7 @@ namespace pyttogpanne_api.Features.Recipes
             await AddTombstoneAsync(recipe.Slug, db, ct);
             db.Recipes.Remove(recipe);
             await db.SaveChangesAsync(ct);
-            await ImageCleanup.DeleteOrphansAsync(droppedImages, db, images, ct);
+            await images.DeleteOrphansAsync(droppedImages, ct);
 
             return TypedResults.NoContent();
         }

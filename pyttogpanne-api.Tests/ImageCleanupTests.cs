@@ -1,35 +1,32 @@
 using Microsoft.EntityFrameworkCore;
-using pyttogpanne_api.Models;
 using pyttogpanne_api.Models.Recipes;
-using pyttogpanne_api.Services;
 using Xunit;
 
 namespace pyttogpanne_api.Tests;
 
+/// <summary>The package's orphan cleanup over this app's model: each table that shows an image keeps it.</summary>
 public class ImageCleanupTests : TestBase
 {
-    private static ContentImage Image(string id) =>
-        new() { Id = id, FileName = $"{id}.png", ContentType = "image/png", StoredPath = $"{id}.png" };
-
     [Fact]
     public async Task DeleteOrphans_RemovesAnImageNothingPointsAt()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(Image("aaaa"));
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
         await db.SaveChangesAsync();
 
-        var storage = new FakeImageStorage();
-        await ImageCleanup.DeleteOrphansAsync(["aaaa"], db, storage, default);
+        await images.Service.DeleteOrphansAsync(["aaaa"]);
 
         Assert.Empty(await db.ContentImages.ToListAsync());
-        Assert.Equal(1, storage.DeleteCount);
+        Assert.False(images.FileExists("aaaa"));
     }
 
     [Fact]
     public async Task DeleteOrphans_KeepsAnImageAStepStillShows()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(Image("aaaa"));
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
         db.Recipes.Add(new Recipe
         {
             Slug = "med-stegbilde",
@@ -38,18 +35,18 @@ public class ImageCleanupTests : TestBase
         });
         await db.SaveChangesAsync();
 
-        var storage = new FakeImageStorage();
-        await ImageCleanup.DeleteOrphansAsync(["aaaa"], db, storage, default);
+        await images.Service.DeleteOrphansAsync(["aaaa"]);
 
         Assert.Single(await db.ContentImages.ToListAsync());
-        Assert.Equal(0, storage.DeleteCount);
+        Assert.True(images.FileExists("aaaa"));
     }
 
     [Fact]
     public async Task DeleteOrphans_KeepsAnImageAGearItemStillShows()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(Image("aaaa"));
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
         db.GearItems.Add(new GearItem
         {
             Slug = "brennar",
@@ -59,40 +56,27 @@ public class ImageCleanupTests : TestBase
         });
         await db.SaveChangesAsync();
 
-        var storage = new FakeImageStorage();
-        await ImageCleanup.DeleteOrphansAsync(["aaaa"], db, storage, default);
+        await images.Service.DeleteOrphansAsync(["aaaa"]);
 
         Assert.Single(await db.ContentImages.ToListAsync());
     }
 
     [Fact]
-    public async Task DeleteOrphans_IgnoresAnEmptyCandidateList()
+    public async Task DeleteOrphans_KeepsAnImageARecipeStillShows()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(Image("aaaa"));
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
+        db.Recipes.Add(new Recipe
+        {
+            Slug = "med-bilde",
+            Title = "Med bilde",
+            Images = [new RecipeImage { ContentImageId = "aaaa", SortOrder = 0 }],
+        });
         await db.SaveChangesAsync();
 
-        await ImageCleanup.DeleteOrphansAsync([], db, new FakeImageStorage(), default);
+        await images.Service.DeleteOrphansAsync(["aaaa"]);
 
         Assert.Single(await db.ContentImages.ToListAsync());
-    }
-
-    /// <summary>
-    /// The cleanup checks three tables by hand. A new table pointing at ContentImages has to be
-    /// added there too, or its images would be deleted while still in use; this fails first.
-    /// </summary>
-    [Fact]
-    public async Task ContentImages_IsReferencedByExactlyTheTablesCleanupChecks()
-    {
-        await using var db = CreateDbContext();
-
-        var referencing = db.Model
-            .FindEntityType(typeof(ContentImage))!
-            .GetReferencingForeignKeys()
-            .Select(fk => fk.DeclaringEntityType.ClrType.Name)
-            .OrderBy(name => name)
-            .ToList();
-
-        Assert.Equal(["ContentImageVariant", "GearImage", "RecipeImage", "RecipeStep"], referencing);
     }
 }

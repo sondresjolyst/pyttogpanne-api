@@ -6,6 +6,7 @@ using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models;
 using pyttogpanne_api.Models.Recipes;
 using pyttogpanne_api.Services;
+using SjolystInnovation.AppKit.Storage.Images;
 
 namespace pyttogpanne_api.Features.Gear
 {
@@ -63,7 +64,7 @@ namespace pyttogpanne_api.Features.Gear
             return TypedResults.Created($"/api/gear/{item.Slug}", ToDto(item));
         }
 
-        public static async Task<IResult> Update(int id, GearItemInput body, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
+        public static async Task<IResult> Update(int id, GearItemInput body, ApplicationDbContext db, IContentImageService images, CancellationToken ct)
         {
             var item = await db.GearItems.Include(g => g.Images).FirstOrDefaultAsync(g => g.Id == id, ct);
             if (item == null) return TypedResults.NotFound();
@@ -79,12 +80,12 @@ namespace pyttogpanne_api.Features.Gear
             GalleryImages.Replace(item.Images, body.Images);
 
             await db.SaveChangesAsync(ct);
-            await ImageCleanup.DeleteOrphansAsync(dropped, db, images, ct);
+            await images.DeleteOrphansAsync(dropped, ct);
 
             return TypedResults.Ok(ToDto(item));
         }
 
-        public static async Task<IResult> Delete(int id, ApplicationDbContext db, IImageStorageService images, CancellationToken ct)
+        public static async Task<IResult> Delete(int id, ApplicationDbContext db, IContentImageService images, CancellationToken ct)
         {
             var item = await db.GearItems.Include(g => g.Images).FirstOrDefaultAsync(g => g.Id == id, ct);
             if (item == null) return TypedResults.NotFound();
@@ -92,7 +93,7 @@ namespace pyttogpanne_api.Features.Gear
             var dropped = item.Images.Select(i => i.ContentImageId).ToList();
             db.GearItems.Remove(item);
             await db.SaveChangesAsync(ct);
-            await ImageCleanup.DeleteOrphansAsync(dropped, db, images, ct);
+            await images.DeleteOrphansAsync(dropped, ct);
 
             return TypedResults.NoContent();
         }

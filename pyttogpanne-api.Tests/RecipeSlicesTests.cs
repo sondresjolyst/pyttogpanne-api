@@ -152,6 +152,7 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_CanTakeTheDisclosureBackOff()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
 
         var input = Input();
         input.IsAdvertising = true;
@@ -161,7 +162,7 @@ public class RecipeSlicesTests : TestBase
         input.IsAdvertising = false;
         input.Advertiser = null;
         var ok = Assert.IsType<Ok<RecipeDetailDto>>(
-            await RecipeCommands.Update(created.Value!.Id, input, db, new FakeImageStorage(), default));
+            await RecipeCommands.Update(created.Value!.Id, input, db, images.Service, default));
 
         Assert.False(ok.Value!.IsAdvertising);
         Assert.Null(ok.Value.Advertiser);
@@ -222,6 +223,7 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_ReorderingThePhotosChangesTheCover()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
 
         var input = Input();
         input.Images = [new GalleryImageInput { ContentImageId = "aaaa" }, new GalleryImageInput { ContentImageId = "bbbb" }];
@@ -229,7 +231,7 @@ public class RecipeSlicesTests : TestBase
 
         input.Images = [new GalleryImageInput { ContentImageId = "bbbb" }, new GalleryImageInput { ContentImageId = "aaaa" }];
         var ok = Assert.IsType<Ok<RecipeDetailDto>>(
-            await RecipeCommands.Update(created.Value!.Id, input, db, new FakeImageStorage(), default));
+            await RecipeCommands.Update(created.Value!.Id, input, db, images.Service, default));
 
         Assert.Equal("bbbb", ok.Value!.CoverImageId);
     }
@@ -238,18 +240,18 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_DroppingAPhotoDeletesTheStoredFile()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(new ContentImage { Id = "aaaa", FileName = "a.png", ContentType = "image/png", StoredPath = "a.png" });
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
         await db.SaveChangesAsync();
 
         var input = Input();
         input.Images = [new GalleryImageInput { ContentImageId = "aaaa" }];
         var created = Assert.IsType<Created<RecipeDetailDto>>(await RecipeCommands.Create(input, db, default));
 
-        var storage = new FakeImageStorage();
         input.Images = [];
-        await RecipeCommands.Update(created.Value!.Id, input, db, storage, default);
+        await RecipeCommands.Update(created.Value!.Id, input, db, images.Service, default);
 
-        Assert.Equal(1, storage.DeleteCount);
+        Assert.False(images.FileExists("aaaa"));
         Assert.Empty(await db.ContentImages.ToListAsync());
     }
 
@@ -257,7 +259,8 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_KeepsAPhotoThatAnotherRecipeStillShows()
     {
         await using var db = CreateDbContext();
-        db.ContentImages.Add(new ContentImage { Id = "aaaa", FileName = "a.png", ContentType = "image/png", StoredPath = "a.png" });
+        using var images = new TestImages(db);
+        db.ContentImages.Add(images.Stored("aaaa"));
         await db.SaveChangesAsync();
 
         var shared = Input();
@@ -265,11 +268,10 @@ public class RecipeSlicesTests : TestBase
         var first = Assert.IsType<Created<RecipeDetailDto>>(await RecipeCommands.Create(shared, db, default));
         Assert.IsType<Created<RecipeDetailDto>>(await RecipeCommands.Create(shared, db, default));
 
-        var storage = new FakeImageStorage();
         shared.Images = [];
-        await RecipeCommands.Update(first.Value!.Id, shared, db, storage, default);
+        await RecipeCommands.Update(first.Value!.Id, shared, db, images.Service, default);
 
-        Assert.Equal(0, storage.DeleteCount);
+        Assert.True(images.FileExists("aaaa"));
         Assert.Single(await db.ContentImages.ToListAsync());
     }
 
@@ -277,10 +279,11 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_ReplacesChildrenRatherThanAppending()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var recipe = await SeedRecipeAsync(db);
 
         var input = Input(title: "Turgrøt");
-        var ok = Assert.IsType<Ok<RecipeDetailDto>>(await RecipeCommands.Update(recipe.Id, input, db, new FakeImageStorage(), default));
+        var ok = Assert.IsType<Ok<RecipeDetailDto>>(await RecipeCommands.Update(recipe.Id, input, db, images.Service, default));
 
         Assert.Equal(2, ok.Value!.Ingredients.Count);
         Assert.Equal(2, ok.Value.Steps.Count);
@@ -291,9 +294,10 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_NewTitle_ReSlugsAndTombstonesTheOldSlug()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var recipe = await SeedRecipeAsync(db, slug: "turgrot");
 
-        var ok = Assert.IsType<Ok<RecipeDetailDto>>(await RecipeCommands.Update(recipe.Id, Input(title: "Fjellgrøt"), db, new FakeImageStorage(), default));
+        var ok = Assert.IsType<Ok<RecipeDetailDto>>(await RecipeCommands.Update(recipe.Id, Input(title: "Fjellgrøt"), db, images.Service, default));
 
         Assert.Equal("fjellgrot", ok.Value!.Slug);
         Assert.Equal("turgrot", (await db.DeletedRecipes.SingleAsync()).Slug);
@@ -303,9 +307,10 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_Unpublishing_TombstonesTheSlug()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var recipe = await SeedRecipeAsync(db, slug: "turgrot");
 
-        await RecipeCommands.Update(recipe.Id, Input(title: "Turgrøt", published: false), db, new FakeImageStorage(), default);
+        await RecipeCommands.Update(recipe.Id, Input(title: "Turgrøt", published: false), db, images.Service, default);
 
         Assert.Equal("turgrot", (await db.DeletedRecipes.SingleAsync()).Slug);
     }
@@ -314,10 +319,11 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_RePublishing_ClearsTheTombstone()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var recipe = await SeedRecipeAsync(db, slug: "turgrot");
 
-        await RecipeCommands.Update(recipe.Id, Input(title: "Turgrøt", published: false), db, new FakeImageStorage(), default);
-        await RecipeCommands.Update(recipe.Id, Input(title: "Turgrøt", published: true), db, new FakeImageStorage(), default);
+        await RecipeCommands.Update(recipe.Id, Input(title: "Turgrøt", published: false), db, images.Service, default);
+        await RecipeCommands.Update(recipe.Id, Input(title: "Turgrøt", published: true), db, images.Service, default);
 
         Assert.Empty(await db.DeletedRecipes.ToListAsync());
     }
@@ -326,16 +332,18 @@ public class RecipeSlicesTests : TestBase
     public async Task Update_Missing_Returns404()
     {
         await using var db = CreateDbContext();
-        Assert.IsType<NotFound>(await RecipeCommands.Update(404, Input(), db, new FakeImageStorage(), default));
+        using var images = new TestImages(db);
+        Assert.IsType<NotFound>(await RecipeCommands.Update(404, Input(), db, images.Service, default));
     }
 
     [Fact]
     public async Task Delete_RemovesRecipeAndTombstonesTheSlug()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var recipe = await SeedRecipeAsync(db, slug: "turgrot");
 
-        Assert.IsType<NoContent>(await RecipeCommands.Delete(recipe.Id, db, new FakeImageStorage(), default));
+        Assert.IsType<NoContent>(await RecipeCommands.Delete(recipe.Id, db, images.Service, default));
 
         Assert.Empty(await db.Recipes.ToListAsync());
         Assert.Equal("turgrot", (await db.DeletedRecipes.SingleAsync()).Slug);
@@ -451,10 +459,11 @@ public class RecipeSlicesTests : TestBase
     public async Task GetSync_Since_ReportsDeletedSlugs()
     {
         await using var db = CreateDbContext();
+        using var images = new TestImages(db);
         var recipe = await SeedRecipeAsync(db, slug: "turgrot");
         var cutoff = DateTime.UtcNow.AddSeconds(-1);
 
-        await RecipeCommands.Delete(recipe.Id, db, new FakeImageStorage(), default);
+        await RecipeCommands.Delete(recipe.Id, db, images.Service, default);
 
         var ok = Assert.IsType<Ok<RecipeSyncDto>>(await RecipeQueries.GetSync(db, default, since: cutoff));
 

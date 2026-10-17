@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using SjolystInnovation.AppKit.Storage;
 using pyttogpanne_api.Services;
 using Xunit;
 
@@ -17,10 +18,10 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
-    public async Task AppValidationException_MapsTo400()
+    public async Task AppKitFileRefusedException_MapsTo400()
     {
         var (handler, ctx) = Build();
-        await handler.TryHandleAsync(ctx, new AppValidationException("bad file"), default);
+        await handler.TryHandleAsync(ctx, new AppKitFileRefusedException("Only PNG, JPEG, WebP, GIF, or AVIF files are accepted."), default);
         Assert.Equal(StatusCodes.Status400BadRequest, ctx.Response.StatusCode);
     }
 

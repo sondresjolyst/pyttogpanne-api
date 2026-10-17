@@ -1,18 +1,20 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using pyttogpanne_api.Constants;
 using pyttogpanne_api.Infrastructure;
 using pyttogpanne_api.Models;
+using pyttogpanne_api.Models.Admin;
 using pyttogpanne_api.Services;
+using SjolystInnovation.AppKit.Storage.Images;
 
 namespace pyttogpanne_api.Features.Admin
 {
-    /// <summary>Admin dashboard: aggregate stats, daily history, roles, Brevo email stats.</summary>
+    /// <summary>Admin dashboard: aggregate stats, the sampler behind the daily history, roles, Brevo email stats.</summary>
     public static class AdminDashboard
     {
-        public static async Task<IResult> GetStats(ApplicationDbContext db, IConfiguration config, ILoggerFactory loggerFactory, CancellationToken ct)
+        public static async Task<IResult> GetStats(ApplicationDbContext db, IOptions<AppKitContentImagesOptions> images, ILoggerFactory loggerFactory, CancellationToken ct)
         {
-            var options = config.GetSection("Storage").Get<StorageOptions>() ?? new StorageOptions();
-            var imagesPath = Path.GetFullPath(options.ImagesPath);
+            var imagesPath = Path.GetFullPath(images.Value.ImagesPath);
 
             long diskTotal = 0, diskFree = 0;
             try
@@ -40,21 +42,15 @@ namespace pyttogpanne_api.Features.Admin
             });
         }
 
-        public static async Task<IResult> GetStatsHistory(ApplicationDbContext db, CancellationToken ct)
+        /// <summary>The live totals behind the daily history. AppKit.AdminStats stores one row per completed day.</summary>
+        public static async Task<DailyStatSnapshot> SampleAsync(ApplicationDbContext db, CancellationToken ct) => new()
         {
-            var snapshots = await StatsSnapshotService.GetHistoryAsync(db, ct);
-
-            var result = snapshots.Select(s => new DailyStatDto
-            {
-                Date = s.Date.ToString("yyyy-MM-dd"),
-                TotalUsers = s.TotalUsers,
-                PublishedRecipes = s.PublishedRecipes,
-                DraftRecipes = s.DraftRecipes,
-                GearItemCount = s.GearItemCount,
-                ContentImages = s.ContentImages
-            }).ToList();
-            return TypedResults.Ok(result);
-        }
+            TotalUsers = await db.Users.CountAsync(u => !u.IsDeleted, ct),
+            PublishedRecipes = await db.Recipes.CountAsync(r => r.IsPublished, ct),
+            DraftRecipes = await db.Recipes.CountAsync(r => !r.IsPublished, ct),
+            GearItemCount = await db.GearItems.CountAsync(ct),
+            ContentImages = await db.ContentImages.CountAsync(ct)
+        };
 
         public static IResult GetRoles() => TypedResults.Ok(RoleNames.AllRoles);
 
@@ -83,7 +79,6 @@ namespace pyttogpanne_api.Features.Admin
             {
                 var group = app.MapGroup("/api/admin").RequireAuthorization(Policies.Admin);
                 group.MapGet("stats", GetStats);
-                group.MapGet("stats/history", GetStatsHistory);
                 group.MapGet("roles", GetRoles);
                 group.MapGet("email-stats", GetEmailStats);
             }

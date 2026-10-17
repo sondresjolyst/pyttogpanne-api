@@ -5,6 +5,7 @@ using SjolystInnovation.AppKit.SiteSettings;
 using pyttogpanne_api.Models.Admin;
 using pyttogpanne_api.Models.Recipes;
 using SjolystInnovation.AppKit.Auth;
+using SjolystInnovation.AppKit.Storage.Images;
 
 namespace pyttogpanne_api.Models
 {
@@ -38,11 +39,7 @@ namespace pyttogpanne_api.Models
 
             modelBuilder.AddAppKitLegalPages();
 
-            modelBuilder.Entity<ContentImageVariant>()
-                .HasOne(v => v.ContentImage)
-                .WithMany(i => i.Variants)
-                .HasForeignKey(v => v.ContentImageId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.AddAppKitContentImages();
 
             modelBuilder.Entity<Recipe>()
                 .HasIndex(r => r.Slug)
