@@ -1,12 +1,13 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using pyttogpanne_api.Features.Admin;
-using pyttogpanne_api.Models;
+using pyttogpanne_api.Models.Admin;
 using pyttogpanne_api.Models.Recipes;
 using pyttogpanne_api.Services;
+using SjolystInnovation.AppKit.Storage.Images;
 using Xunit;
 
 namespace pyttogpanne_api.Tests;
@@ -26,7 +27,7 @@ public class AdminSlicesTests : TestBase
         db.ContentImages.Add(new ContentImage { FileName = "x.png", ContentType = "image/png", StoredPath = "x.png" });
         await db.SaveChangesAsync();
 
-        var ok = Assert.IsType<Ok<AdminStatsDto>>(await AdminDashboard.GetStats(db, new ConfigurationBuilder().Build(), NullLoggerFactory.Instance, default));
+        var ok = Assert.IsType<Ok<AdminStatsDto>>(await AdminDashboard.GetStats(db, Options.Create(new AppKitContentImagesOptions()), NullLoggerFactory.Instance, default));
         Assert.Equal(2, ok.Value!.TotalUsers);
         Assert.Equal(2, ok.Value.PublishedRecipes);
         Assert.Equal(1, ok.Value.DraftRecipes);
@@ -34,15 +35,35 @@ public class AdminSlicesTests : TestBase
     }
 
     [Fact]
-    public async Task GetStatsHistory_ReturnsTodayRow()
+    public async Task SampleAsync_CountsTheLiveTotals()
     {
         await using var db = CreateDbContext();
-        db.Users.Add(MakeUser("u1", "a@example.com"));
+        var deleted = MakeUser("u-del", "del@example.com");
+        deleted.IsDeleted = true;
+        db.Users.AddRange(MakeUser("u1", "a@example.com"), deleted);
+        db.Recipes.AddRange(Dish("a", true), Dish("b", false), Dish("c", false));
+        db.GearItems.Add(new GearItem { Slug = "brennar", Title = "Brennar", Body = "Tekst" });
+        db.ContentImages.Add(new ContentImage { FileName = "x.png", ContentType = "image/png", StoredPath = "x.png" });
         await db.SaveChangesAsync();
 
-        var ok = Assert.IsType<Ok<List<DailyStatDto>>>(await AdminDashboard.GetStatsHistory(db, default));
-        Assert.NotEmpty(ok.Value!);
-        Assert.Equal(1, ok.Value!.Last().TotalUsers);
+        var sample = await AdminDashboard.SampleAsync(db, default);
+
+        Assert.Equal(1, sample.TotalUsers);
+        Assert.Equal(1, sample.PublishedRecipes);
+        Assert.Equal(2, sample.DraftRecipes);
+        Assert.Equal(1, sample.GearItemCount);
+        Assert.Equal(1, sample.ContentImages);
+    }
+
+    /// <summary>The history's JSON keys come from these names, and the admin chart reads those keys.</summary>
+    [Fact]
+    public void DailyStatSnapshot_KeepsTheCounterNamesTheChartReads()
+    {
+        var counters = typeof(DailyStatSnapshot).GetProperties()
+            .Where(p => p.PropertyType == typeof(int) && p.Name != nameof(DailyStatSnapshot.Id))
+            .Select(p => p.Name);
+
+        Assert.Equal(["TotalUsers", "PublishedRecipes", "DraftRecipes", "GearItemCount", "ContentImages"], counters);
     }
 
     [Fact]

@@ -13,16 +13,6 @@ namespace pyttogpanne_api.Features.Admin
         public long DiskFreeBytes { get; set; }
     }
 
-    public class DailyStatDto
-    {
-        public string Date { get; set; } = string.Empty;
-        public int TotalUsers { get; set; }
-        public int PublishedRecipes { get; set; }
-        public int DraftRecipes { get; set; }
-        public int GearItemCount { get; set; }
-        public int ContentImages { get; set; }
-    }
-
     public class EmailStatsDto
     {
         public int Days { get; set; }

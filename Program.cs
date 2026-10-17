@@ -2,7 +2,6 @@ using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using pyttogpanne_api.Constants;
@@ -19,6 +18,9 @@ using SjolystInnovation.AppKit.Auth;
 using SjolystInnovation.AppKit.SiteSettings;
 using SjolystInnovation.AppKit.Hosting;
 using SjolystInnovation.AppKit.Email;
+using SjolystInnovation.AppKit.Storage.Images;
+using SjolystInnovation.AppKit.AdminStats;
+using pyttogpanne_api.Features.Admin;
 
 namespace pyttogpanne_api
 {
@@ -66,8 +68,8 @@ namespace pyttogpanne_api
             });
             builder.Services.AddAppKitAccounts<User, ApplicationDbContext>(o => o.AdminRole = RoleNames.Admin);
             builder.Services.AddAppKitAuth<ApplicationDbContext>(builder.Configuration.GetSection("Jwt"));
-            builder.Services.AddSingleton<IImageStorageService, ImageStorageService>();
-            builder.Services.AddHostedService<StatsSnapshotService>();
+            builder.Services.AddAppKitContentImages<ApplicationDbContext>(builder.Configuration.GetSection("Storage"));
+            builder.Services.AddAppKitDailyStats<ApplicationDbContext, DailyStatSnapshot>(o => o.LiveSampler = AdminDashboard.SampleAsync);
 
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -129,25 +131,13 @@ namespace pyttogpanne_api
 
             var app = builder.Build();
 
+            app.Services.GetRequiredService<ILogger<Program>>().LogInformation("Starting API.");
+            await app.Services.MigrateAppKitDatabaseAsync<ApplicationDbContext>(app.Configuration);
+            await app.Services.SeedAppKitRolesAsync(RoleNames.AllRoles);
+
             using (var scope = app.Services.CreateScope())
             {
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                logger.LogInformation("Starting API.");
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                var pending = (await context.Database.GetPendingMigrationsAsync()).ToList();
-                if (pending.Count > 0)
-                {
-                    logger.LogInformation("Applying {Count} pending migration(s): {Migrations}", pending.Count, string.Join(", ", pending));
-                    await context.Database.MigrateAsync();
-                }
-
-                foreach (var roleName in RoleNames.AllRoles)
-                {
-                    if (!await roleManager.RoleExistsAsync(roleName))
-                        await roleManager.CreateAsync(new IdentityRole(roleName));
-                }
 
                 if (await context.AppSettings.FindAsync(1) == null)
                 {
@@ -157,7 +147,7 @@ namespace pyttogpanne_api
 
                 await SeedData.EnsureRecipeCategoriesAsync(context);
                 await app.Services.SeedAppKitLegalPagesAsync<ApplicationDbContext>(LegalSeedText.All);
-                await app.Services.SeedAppKitFirstAdminAsync<User>(app.Configuration, (email, first, last) => new User { FirstName = first, LastName = last }, RoleNames.Admin);
+                await app.Services.SeedAppKitFirstAdminAsync<User>(app.Configuration, u => new User { FirstName = u.FirstName, LastName = u.LastName });
 
                 if (app.Environment.IsDevelopment())
                     await SampleRecipes.EnsureAsync(context);
@@ -181,7 +171,7 @@ namespace pyttogpanne_api
             app.UseAppKitRateLimiting();
             app.MapControllers();
             app.MapEndpoints();
-            app.MapAppKitAuthEndpoints<User, ApplicationDbContext>(configure: o => o.IsActive = u => !u.IsDeleted);
+            app.MapAppKitAuth<User, ApplicationDbContext>(configure: o => o.IsActive = u => !u.IsDeleted);
             app.MapAppKitAccount<User>();
             app.MapAppKitSiteSettings<ApplicationDbContext, AppSettings>(configure: o => o.Policy = Policies.Admin);
             app.MapAppKitLegalPages<ApplicationDbContext>(configure: o =>
@@ -192,10 +182,11 @@ namespace pyttogpanne_api
             app.MapAppKitUserAdmin<User, ApplicationDbContext>(configure: o =>
             {
                 o.Roles = RoleNames.AllRoles;
-                o.AdminRole = RoleNames.Admin;
                 o.Policy = Policies.Admin;
-                o.NewUser = (email, first, last) => new User { FirstName = first, LastName = last };
+                o.NewUser = u => new User { FirstName = u.FirstName, LastName = u.LastName };
             });
+            app.MapAppKitContentImages<ApplicationDbContext>("/api/content-images", o => o.Policy = Policies.Admin);
+            app.MapAppKitDailyStats<ApplicationDbContext, DailyStatSnapshot>("/api/admin/stats", o => o.Policy = Policies.Admin);
             app.MapAppKitHealthChecks();
             app.Run();
         }
