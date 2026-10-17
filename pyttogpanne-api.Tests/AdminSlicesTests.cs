@@ -1,12 +1,9 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Moq;
 using pyttogpanne_api.Features.Admin;
 using pyttogpanne_api.Models.Admin;
 using pyttogpanne_api.Models.Recipes;
-using pyttogpanne_api.Services;
+using SjolystInnovation.AppKit.Storage;
 using SjolystInnovation.AppKit.Storage.Images;
 using Xunit;
 
@@ -27,11 +24,18 @@ public class AdminSlicesTests : TestBase
         db.ContentImages.Add(new ContentImage { FileName = "x.png", ContentType = "image/png", StoredPath = "x.png" });
         await db.SaveChangesAsync();
 
-        var ok = Assert.IsType<Ok<AdminStatsDto>>(await AdminDashboard.GetStats(db, Options.Create(new AppKitContentImagesOptions()), NullLoggerFactory.Instance, default));
+        var storage = new Mock<IAppKitStorageUsage>();
+        storage.Setup(s => s.GetAsync(It.Is<IEnumerable<string>>(n => n.SequenceEqual(new[] { AppKitContentImages.StoreName })), default))
+            .ReturnsAsync(new AppKitStorageUsage(1234, 5000, 4000));
+
+        var ok = Assert.IsType<Ok<AdminStatsDto>>(await AdminDashboard.GetStats(db, storage.Object, default));
         Assert.Equal(2, ok.Value!.TotalUsers);
         Assert.Equal(2, ok.Value.PublishedRecipes);
         Assert.Equal(1, ok.Value.DraftRecipes);
         Assert.Equal(1, ok.Value.ContentImages);
+        Assert.Equal(1234, ok.Value.StorageUsedBytes);
+        Assert.Equal(5000, ok.Value.DiskTotalBytes);
+        Assert.Equal(4000, ok.Value.DiskFreeBytes);
     }
 
     [Fact]
@@ -64,31 +68,5 @@ public class AdminSlicesTests : TestBase
             .Select(p => p.Name);
 
         Assert.Equal(["TotalUsers", "PublishedRecipes", "DraftRecipes", "GearItemCount", "ContentImages"], counters);
-    }
-
-    [Fact]
-    public void GetRoles_ReturnsAllRoles()
-    {
-        var ok = Assert.IsType<Ok<string[]>>(AdminDashboard.GetRoles());
-        Assert.Contains("Admin", ok.Value!);
-        Assert.Contains("Default", ok.Value!);
-    }
-
-    [Fact]
-    public async Task GetEmailStats_ReturnsStats()
-    {
-        var email = new Mock<IEmailService>();
-        email.Setup(e => e.GetEmailStatsAsync(30)).ReturnsAsync(new EmailStatsDto { Days = 30, Requests = 5 });
-        var ok = Assert.IsType<Ok<EmailStatsDto>>(await AdminDashboard.GetEmailStats(email.Object, NullLoggerFactory.Instance, 30));
-        Assert.Equal(5, ok.Value!.Requests);
-    }
-
-    [Fact]
-    public async Task GetEmailStats_BrevoFailure_Returns502()
-    {
-        var email = new Mock<IEmailService>();
-        email.Setup(e => e.GetEmailStatsAsync(It.IsAny<int>())).ThrowsAsync(new Exception("brevo down"));
-        var problem = Assert.IsType<ProblemHttpResult>(await AdminDashboard.GetEmailStats(email.Object, NullLoggerFactory.Instance, 30));
-        Assert.Equal(StatusCodes.Status502BadGateway, problem.StatusCode);
     }
 }
