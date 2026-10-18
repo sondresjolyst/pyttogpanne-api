@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.1.0...v1.2.0) (2026-10-18)
+
+
+### Features
+
+* **email:** tag Brevo emails with the app name ([#65](https://github.com/sondresjolyst/pyttogpanne-api/issues/65)) ([1ea456d](https://github.com/sondresjolyst/pyttogpanne-api/commit/1ea456d0b09efa2f6b3e2a615f44e192bcdc1147))
+
 ## [1.1.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.5...v1.1.0) (2026-10-18)
 
 
