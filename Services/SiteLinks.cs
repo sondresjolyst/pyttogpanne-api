@@ -9,9 +9,6 @@ namespace pyttogpanne_api.Services
         public static string BaseUrl(IConfiguration config) =>
             (config["Site:BaseUrl"] ?? Fallback).TrimEnd('/');
 
-        public static string Build(IConfiguration config, string slug) =>
-            $"{BaseUrl(config)}/{DefaultLocale}/builds/{Uri.EscapeDataString(slug)}";
-
         public static string SetPasswordPage(IConfiguration config) =>
             $"{BaseUrl(config)}/{DefaultLocale}/reset-password";
     }
