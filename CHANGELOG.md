@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.2.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.1.0...v1.2.0) (2026-10-18)
+
+
+### Features
+
+* **email:** tag Brevo emails with the app name ([#65](https://github.com/sondresjolyst/pyttogpanne-api/issues/65)) ([1ea456d](https://github.com/sondresjolyst/pyttogpanne-api/commit/1ea456d0b09efa2f6b3e2a615f44e192bcdc1147))
+
+## [1.1.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.5...v1.1.0) (2026-10-18)
+
+
+### Features
+
+* **api:** answer unreadable JSON bodies with 400 through AppKit.Hosting 1.0.1 ([#63](https://github.com/sondresjolyst/pyttogpanne-api/issues/63)) ([af22cc7](https://github.com/sondresjolyst/pyttogpanne-api/commit/af22cc72b38c5a9cbeecf03696283bc14c62f403))
+* **api:** serve roles, email stats and storage usage from the AppKit 1.0.1 packages ([#60](https://github.com/sondresjolyst/pyttogpanne-api/issues/60)) ([2df28ad](https://github.com/sondresjolyst/pyttogpanne-api/commit/2df28adfde203ff8f72ef748cc8700dc8f4cc0af))
+* **auth:** end sessions at the API on logout and after a password reset ([#37](https://github.com/sondresjolyst/pyttogpanne-api/issues/37)) ([c7cc82c](https://github.com/sondresjolyst/pyttogpanne-api/commit/c7cc82ceec6f28651b28abc27fee0386809db82c))
+* **auth:** send reset and invite emails through SjolystInnovation.AppKit.Auth ([#47](https://github.com/sondresjolyst/pyttogpanne-api/issues/47)) ([5d4139b](https://github.com/sondresjolyst/pyttogpanne-api/commit/5d4139bcdcdb54f88764c79db233de90fd758a4c))
+* **auth:** serve sign-in and password reset from SjolystInnovation.AppKit.Auth ([#43](https://github.com/sondresjolyst/pyttogpanne-api/issues/43)) ([e6ff9b7](https://github.com/sondresjolyst/pyttogpanne-api/commit/e6ff9b7a3d36e34cca5e7325ee138eb82e650bcd))
+* **auth:** use SjolystInnovation.AppKit.Auth for Identity, bearer tokens and token cleanup ([#41](https://github.com/sondresjolyst/pyttogpanne-api/issues/41)) ([826c2f3](https://github.com/sondresjolyst/pyttogpanne-api/commit/826c2f3d910182de6ee37711e3928f0019280265))
+* **branding:** add the branding endpoint the app uses ([#33](https://github.com/sondresjolyst/pyttogpanne-api/issues/33)) ([86fb4a0](https://github.com/sondresjolyst/pyttogpanne-api/commit/86fb4a0eb5f286829218f6bda1fcdaac8011fd85))
+* **email:** send through SjolystInnovation.AppKit.Email instead of the Brevo SDK ([#42](https://github.com/sondresjolyst/pyttogpanne-api/issues/42)) ([c59f930](https://github.com/sondresjolyst/pyttogpanne-api/commit/c59f93090a9cf43136bf35f695b448e707f1dd70))
+* **legal:** serve legal pages from SjolystInnovation.AppKit.SiteSettings ([#51](https://github.com/sondresjolyst/pyttogpanne-api/issues/51)) ([c337fee](https://github.com/sondresjolyst/pyttogpanne-api/commit/c337feec23944f5033be3babe23bbad870bcb938))
+* **settings:** move settings, company info and branding onto SjolystInnovation.AppKit.SiteSettings ([#49](https://github.com/sondresjolyst/pyttogpanne-api/issues/49)) ([2b86f3e](https://github.com/sondresjolyst/pyttogpanne-api/commit/2b86f3e806252ebe501fd14fa2664ed6e03fe950))
+* use SjolystInnovation.AppKit.Hosting for startup and rate limiting ([#40](https://github.com/sondresjolyst/pyttogpanne-api/issues/40)) ([3deaaec](https://github.com/sondresjolyst/pyttogpanne-api/commit/3deaaec9090a276607def368e48187119109b4c9))
+* **users:** delete accounts through SjolystInnovation.AppKit.Auth ([#45](https://github.com/sondresjolyst/pyttogpanne-api/issues/45)) ([4985d9d](https://github.com/sondresjolyst/pyttogpanne-api/commit/4985d9db861be8a564709355eaeff75a8250aa1d))
+* **users:** serve user admin, invites and first-admin seeding from SjolystInnovation.AppKit.Auth ([#44](https://github.com/sondresjolyst/pyttogpanne-api/issues/44)) ([9ea0ef0](https://github.com/sondresjolyst/pyttogpanne-api/commit/9ea0ef0efa8d61cc96da0e8369d09eb01a43ba3f))
+
+
+### Bug Fixes
+
+* rate limit by the client IP from trusted proxies only ([#38](https://github.com/sondresjolyst/pyttogpanne-api/issues/38)) ([03ceb28](https://github.com/sondresjolyst/pyttogpanne-api/commit/03ceb288b2acfa1ac9da1d1c70f17ad55be5a22f))
+* trust the cluster pod network as a proxy ([#39](https://github.com/sondresjolyst/pyttogpanne-api/issues/39)) ([0400465](https://github.com/sondresjolyst/pyttogpanne-api/commit/0400465b142c9c0e9c53148751fb4d6083746ae8))
+
+
+### Dependencies
+
+* bump SjolystInnovation.AppKit.Auth to 0.8.0 ([#48](https://github.com/sondresjolyst/pyttogpanne-api/issues/48)) ([6df9871](https://github.com/sondresjolyst/pyttogpanne-api/commit/6df9871f749f4ee4b0f902080695476481a0c2fe))
+* **nuget:** bump `Swashbuckle.AspNetCore.Annotations` from 10.2.3 to 10.3.0 ([#58](https://github.com/sondresjolyst/pyttogpanne-api/issues/58)) ([c4a1f40](https://github.com/sondresjolyst/pyttogpanne-api/commit/c4a1f40c0462434a68662ba716136ee148d3afa9))
+* **nuget:** bump `Swashbuckle.AspNetCore` from 10.2.3 to 10.3.0 ([#57](https://github.com/sondresjolyst/pyttogpanne-api/issues/57)) ([66f9b46](https://github.com/sondresjolyst/pyttogpanne-api/commit/66f9b465459a7da921ec982cbdf959ec833b5daa))
+* **nuget:** bump `xunit.v3` from 4.0.1 to 4.0.2 ([#59](https://github.com/sondresjolyst/pyttogpanne-api/issues/59)) ([57eeb7f](https://github.com/sondresjolyst/pyttogpanne-api/commit/57eeb7feba2b8202fe5797e17f2a0921865ad743))
+* **nuget:** Bump FluentValidation and FluentValidation.DependencyInjectionExtensions ([#56](https://github.com/sondresjolyst/pyttogpanne-api/issues/56)) ([cbdc2a6](https://github.com/sondresjolyst/pyttogpanne-api/commit/cbdc2a64d68ed051035b54406813c896903713ac))
+* **nuget:** Bump the skiasharp group with 2 updates ([#35](https://github.com/sondresjolyst/pyttogpanne-api/issues/35)) ([8fb22a4](https://github.com/sondresjolyst/pyttogpanne-api/commit/8fb22a4b4ce4300e150f4e92a5c3c23ebd2c687e))
+
 ## [1.0.5](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.0.4...v1.0.5) (2026-10-04)
 
 
