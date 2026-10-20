@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.2.0...v1.3.0) (2026-10-20)
+
+
+### Features
+
+* **legal:** keep every saved version of the legal pages through AppKit.SiteSettings 1.1.0 ([#68](https://github.com/sondresjolyst/pyttogpanne-api/issues/68)) ([81e8c53](https://github.com/sondresjolyst/pyttogpanne-api/commit/81e8c53db2c6587cb1c9f6e673165e485df06caa))
+
+
+### Dependencies
+
+* **nuget:** bump `SjolystInnovation.AppKit.Hosting` from 1.0.1 to 1.0.3 ([#64](https://github.com/sondresjolyst/pyttogpanne-api/issues/64)) ([13a3a9f](https://github.com/sondresjolyst/pyttogpanne-api/commit/13a3a9fa88cf7932401abcf174c26ceef7922a1a))
+
 ## [1.2.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.1.0...v1.2.0) (2026-10-18)
 
 
