@@ -225,6 +225,118 @@ namespace pyttogpanne_api.Migrations
                     b.ToTable("LegalPages", (string)null);
                 });
 
+            modelBuilder.Entity("SjolystInnovation.AppKit.SiteSettings.LegalPageRevision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BodyMarkdown")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime>("SavedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SavedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key", "Locale", "SavedAt");
+
+                    b.ToTable("LegalPageRevisions", (string)null);
+                });
+
+            modelBuilder.Entity("SjolystInnovation.AppKit.Storage.Images.ContentImage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StoredPath")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("UploadedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ContentImages", (string)null);
+                });
+
+            modelBuilder.Entity("SjolystInnovation.AppKit.Storage.Images.ContentImageVariant", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ContentImageId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StoredPath")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentImageId");
+
+                    b.ToTable("ContentImageVariants", (string)null);
+                });
+
             modelBuilder.Entity("pyttogpanne_api.Models.Admin.AppSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -337,77 +449,6 @@ namespace pyttogpanne_api.Migrations
                         .IsUnique();
 
                     b.ToTable("DailyStatSnapshots");
-                });
-
-            modelBuilder.Entity("pyttogpanne_api.Models.ContentImage", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("character varying(260)");
-
-                    b.Property<int>("Height")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("SizeBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("StoredPath")
-                        .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
-
-                    b.Property<string>("UploadedByUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ContentImages");
-                });
-
-            modelBuilder.Entity("pyttogpanne_api.Models.ContentImageVariant", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("ContentImageId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<long>("SizeBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("StoredPath")
-                        .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContentImageId");
-
-                    b.ToTable("ContentImageVariants");
                 });
 
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.DeletedRecipe", b =>
@@ -893,9 +934,9 @@ namespace pyttogpanne_api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("pyttogpanne_api.Models.ContentImageVariant", b =>
+            modelBuilder.Entity("SjolystInnovation.AppKit.Storage.Images.ContentImageVariant", b =>
                 {
-                    b.HasOne("pyttogpanne_api.Models.ContentImage", "ContentImage")
+                    b.HasOne("SjolystInnovation.AppKit.Storage.Images.ContentImage", "ContentImage")
                         .WithMany("Variants")
                         .HasForeignKey("ContentImageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -906,7 +947,7 @@ namespace pyttogpanne_api.Migrations
 
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.GearImage", b =>
                 {
-                    b.HasOne("pyttogpanne_api.Models.ContentImage", "ContentImage")
+                    b.HasOne("SjolystInnovation.AppKit.Storage.Images.ContentImage", "ContentImage")
                         .WithMany()
                         .HasForeignKey("ContentImageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -944,7 +985,7 @@ namespace pyttogpanne_api.Migrations
 
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.RecipeImage", b =>
                 {
-                    b.HasOne("pyttogpanne_api.Models.ContentImage", "ContentImage")
+                    b.HasOne("SjolystInnovation.AppKit.Storage.Images.ContentImage", "ContentImage")
                         .WithMany()
                         .HasForeignKey("ContentImageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -974,7 +1015,7 @@ namespace pyttogpanne_api.Migrations
 
             modelBuilder.Entity("pyttogpanne_api.Models.Recipes.RecipeStep", b =>
                 {
-                    b.HasOne("pyttogpanne_api.Models.ContentImage", "ContentImage")
+                    b.HasOne("SjolystInnovation.AppKit.Storage.Images.ContentImage", "ContentImage")
                         .WithMany()
                         .HasForeignKey("ContentImageId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -990,7 +1031,7 @@ namespace pyttogpanne_api.Migrations
                     b.Navigation("Recipe");
                 });
 
-            modelBuilder.Entity("pyttogpanne_api.Models.ContentImage", b =>
+            modelBuilder.Entity("SjolystInnovation.AppKit.Storage.Images.ContentImage", b =>
                 {
                     b.Navigation("Variants");
                 });
