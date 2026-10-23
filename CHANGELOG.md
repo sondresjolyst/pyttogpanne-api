@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.0...v1.3.1) (2026-10-23)
+
+
+### Dependencies
+
+* **nuget:** bump AppKit.Hosting to 1.1.0 and AppKit.Email to 1.3.0 ([#69](https://github.com/sondresjolyst/pyttogpanne-api/issues/69)) ([f976d35](https://github.com/sondresjolyst/pyttogpanne-api/commit/f976d3559d8d38daa33e6d153e78ca510f973191))
+
 ## [1.3.0](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.2.0...v1.3.0) (2026-10-20)
 
 
