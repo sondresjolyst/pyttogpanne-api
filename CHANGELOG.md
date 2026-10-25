@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.1...v1.3.2) (2026-10-25)
+
+
+### Dependencies
+
+* **nuget:** Bump the aspnetcore group with 7 updates ([#72](https://github.com/sondresjolyst/pyttogpanne-api/issues/72)) ([515b17d](https://github.com/sondresjolyst/pyttogpanne-api/commit/515b17ddf651b35cd7871868c60407b6c43b0f04))
+
 ## [1.3.1](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.0...v1.3.1) (2026-10-23)
 
 
