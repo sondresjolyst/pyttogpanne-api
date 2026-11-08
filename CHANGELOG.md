@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.3](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.2...v1.3.3) (2026-11-08)
+
+
+### Dependencies
+
+* **docker:** update mcr.microsoft.com/dotnet/aspnet to 1a48394 ([813da13](https://github.com/sondresjolyst/pyttogpanne-api/commit/813da1338656b6650fb4434263eb2e35efca1916))
+* **docker:** update mcr.microsoft.com/dotnet/sdk to 212fe4c ([813da13](https://github.com/sondresjolyst/pyttogpanne-api/commit/813da1338656b6650fb4434263eb2e35efca1916))
+* **nuget:** update Microsoft.AspNetCore.Identity.EntityFrameworkCore from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Microsoft.AspNetCore.Mvc.Testing from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Microsoft.AspNetCore.OpenApi from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Microsoft.EntityFrameworkCore from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Microsoft.EntityFrameworkCore.Design from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Microsoft.EntityFrameworkCore.InMemory from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Microsoft.EntityFrameworkCore.Tools from 10.0.13 to 10.0.14 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update SjolystInnovation.AppKit.SiteSettings from 1.1.1 to 1.2.0 ([9d5c870](https://github.com/sondresjolyst/pyttogpanne-api/commit/9d5c870a5035bea9b6e2653a3786c4c22f45ce25))
+* **nuget:** update Swashbuckle.AspNetCore from 10.3.0 to 10.3.1 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+* **nuget:** update Swashbuckle.AspNetCore.Annotations from 10.3.0 to 10.3.1 ([45fe86a](https://github.com/sondresjolyst/pyttogpanne-api/commit/45fe86a5e30c0e9aa9b52007f2ca3a25427a60b5))
+
 ## [1.3.2](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.1...v1.3.2) (2026-10-25)
 
 
