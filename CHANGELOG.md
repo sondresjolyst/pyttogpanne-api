@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.4](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.3...v1.3.4) (2026-11-15)
+
+
+### Dependencies
+
+* **docker:** update mcr.microsoft.com/dotnet/aspnet from 1a48394 to bfd912c ([5357b4f](https://github.com/sondresjolyst/pyttogpanne-api/commit/5357b4f2727d8c4bc77e8d2703dd3bd4763d848e))
+* **docker:** update mcr.microsoft.com/dotnet/sdk from 212fe4c to fe0fd4e ([5357b4f](https://github.com/sondresjolyst/pyttogpanne-api/commit/5357b4f2727d8c4bc77e8d2703dd3bd4763d848e))
+* **nuget:** update Mapster from 10.0.13 to 10.0.14 ([ede0d4f](https://github.com/sondresjolyst/pyttogpanne-api/commit/ede0d4f3316b7f673e9e64f1a257d9fedb6eb324))
+* **nuget:** update Mapster.DependencyInjection from 10.0.13 to 10.0.14 ([ede0d4f](https://github.com/sondresjolyst/pyttogpanne-api/commit/ede0d4f3316b7f673e9e64f1a257d9fedb6eb324))
+
 ## [1.3.3](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.2...v1.3.3) (2026-11-08)
 
 
