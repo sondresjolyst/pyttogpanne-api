@@ -48,16 +48,16 @@ namespace pyttogpanne_api.Features.Recipes
                     r.Ingredients.Any(i => EF.Functions.ILike(i.Name, term)));
             }
 
-            var recipes = await query
+            var recipes = await SplitQueryRetry.ExecuteAsync(() => query
                 .OrderByDescending(r => r.PublishedAt ?? r.CreatedAt)
-                .ToListAsync(ct);
+                .ToListAsync(ct));
 
             return TypedResults.Ok(recipes.Select(RecipeMapping.ToSummary));
         }
 
         public static async Task<IResult> GetBySlug(string slug, HttpContext http, ApplicationDbContext db, CancellationToken ct)
         {
-            var recipe = await WithGraph(db).FirstOrDefaultAsync(r => r.Slug == slug, ct);
+            var recipe = await SplitQueryRetry.ExecuteAsync(() => WithGraph(db).FirstOrDefaultAsync(r => r.Slug == slug, ct));
             if (recipe == null || (!recipe.IsPublished && !IsAdmin(http)))
                 return TypedResults.NotFound();
 
@@ -66,7 +66,7 @@ namespace pyttogpanne_api.Features.Recipes
 
         public static async Task<IResult> GetForEdit(int id, ApplicationDbContext db, CancellationToken ct)
         {
-            var recipe = await WithGraph(db).FirstOrDefaultAsync(r => r.Id == id, ct);
+            var recipe = await SplitQueryRetry.ExecuteAsync(() => WithGraph(db).FirstOrDefaultAsync(r => r.Id == id, ct));
             if (recipe == null) return TypedResults.NotFound();
             return TypedResults.Ok(RecipeMapping.ToDetail(recipe));
         }
@@ -81,7 +81,7 @@ namespace pyttogpanne_api.Features.Recipes
             if (since.HasValue)
                 query = query.Where(r => r.UpdatedAt > since.Value);
 
-            var recipes = await query.OrderBy(r => r.Id).ToListAsync(ct);
+            var recipes = await SplitQueryRetry.ExecuteAsync(() => query.OrderBy(r => r.Id).ToListAsync(ct));
 
             var tombstones = db.DeletedRecipes.AsNoTracking().AsQueryable();
             if (since.HasValue)

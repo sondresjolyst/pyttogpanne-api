@@ -10,7 +10,7 @@ API for Pyttogpanne. Content is written in
 
 ## Stack
 
-ASP.NET Core 10, PostgreSQL through EF Core and Npgsql, ASP.NET Identity with
+ASP.NET Core 11, PostgreSQL through EF Core and Npgsql, ASP.NET Identity with
 JWT, Mapster, Serilog, Brevo.
 
 ## Quick start
