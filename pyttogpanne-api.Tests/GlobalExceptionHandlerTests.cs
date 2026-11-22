@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using SjolystInnovation.AppKit.Storage;
@@ -23,6 +24,14 @@ public class GlobalExceptionHandlerTests
         var (handler, ctx) = Build();
         await handler.TryHandleAsync(ctx, new AppKitFileRefusedException("Only PNG, JPEG, WebP, GIF, or AVIF files are accepted."), default);
         Assert.Equal(StatusCodes.Status400BadRequest, ctx.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DbQueryConcurrencyException_MapsTo503()
+    {
+        var (handler, ctx) = Build();
+        await handler.TryHandleAsync(ctx, new DbQueryConcurrencyException("changed"), TestContext.Current.CancellationToken);
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, ctx.Response.StatusCode);
     }
 
     [Fact]
