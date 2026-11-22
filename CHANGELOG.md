@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.3.5](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.4...v1.3.5) (2026-11-22)
+
+
+### Dependencies
+
+* **docker:** update mcr.microsoft.com/dotnet/aspnet from bfd912c to 12b1135 ([67cb7c1](https://github.com/sondresjolyst/pyttogpanne-api/commit/67cb7c17ac9b547a0ad74dc23fa1b3cc3642dad4))
+* **docker:** update mcr.microsoft.com/dotnet/sdk from fe0fd4e to bef136a ([67cb7c1](https://github.com/sondresjolyst/pyttogpanne-api/commit/67cb7c17ac9b547a0ad74dc23fa1b3cc3642dad4))
+* **dotnet:** upgrade to .net 11 ([#99](https://github.com/sondresjolyst/pyttogpanne-api/issues/99)) ([d1a23ff](https://github.com/sondresjolyst/pyttogpanne-api/commit/d1a23ffe29a30a0517501590719140996b3db3cd))
+* **nuget:** update Microsoft.AspNetCore.Identity.EntityFrameworkCore from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update Microsoft.AspNetCore.Mvc.Testing from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update Microsoft.AspNetCore.OpenApi from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update Microsoft.EntityFrameworkCore from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update Microsoft.EntityFrameworkCore.Design from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update Microsoft.EntityFrameworkCore.InMemory from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update Microsoft.EntityFrameworkCore.Tools from 10.0.14 to 10.0.15 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+* **nuget:** update SjolystInnovation.AppKit.AdminStats from 1.0.1 to 1.0.2 ([a029818](https://github.com/sondresjolyst/pyttogpanne-api/commit/a029818763e7a6932650b31f447bfc50dd2be399))
+* **nuget:** update SjolystInnovation.AppKit.Auth from 1.1.1 to 1.1.2 ([a029818](https://github.com/sondresjolyst/pyttogpanne-api/commit/a029818763e7a6932650b31f447bfc50dd2be399))
+* **nuget:** update SjolystInnovation.AppKit.Hosting from 1.1.1 to 1.1.2 ([a029818](https://github.com/sondresjolyst/pyttogpanne-api/commit/a029818763e7a6932650b31f447bfc50dd2be399))
+* **nuget:** update SjolystInnovation.AppKit.SiteSettings from 1.2.0 to 1.2.1 ([a029818](https://github.com/sondresjolyst/pyttogpanne-api/commit/a029818763e7a6932650b31f447bfc50dd2be399))
+* **nuget:** update SjolystInnovation.AppKit.Storage.Images from 1.0.1 to 1.0.2 ([a029818](https://github.com/sondresjolyst/pyttogpanne-api/commit/a029818763e7a6932650b31f447bfc50dd2be399))
+* **nuget:** update xunit.v3 from 4.0.2 to 4.0.3 ([de6fdf4](https://github.com/sondresjolyst/pyttogpanne-api/commit/de6fdf486098b6ca5d644e7872bda0b2f55151c3))
+
 ## [1.3.4](https://github.com/sondresjolyst/pyttogpanne-api/compare/v1.3.3...v1.3.4) (2026-11-15)
 
 
